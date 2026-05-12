@@ -4,6 +4,7 @@ import { siteConfig } from "@/lib/site";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloatingButton } from "@/components/layout/WhatsAppFloatingButton";
+import { CartProvider } from "@/components/cart/CartProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -34,10 +35,12 @@ export default function RootLayout({
   return (
     <html lang="es-AR">
       <body>
-        <Header />
-        <main>{children}</main>
-        <Footer />
-        <WhatsAppFloatingButton />
+        <CartProvider>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+          <WhatsAppFloatingButton />
+        </CartProvider>
       </body>
     </html>
   );
