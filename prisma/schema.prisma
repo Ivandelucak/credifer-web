@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String
+  slug          String        @unique
+  description   String?       @db.Text
+  isActive      Boolean       @default(true)
+  position      Int           @default(0)
+
+  products      Product[]
+  subcategories Subcategory[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([isActive])
+  @@index([position])
+}
+
+model Subcategory {
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  description String?   @db.Text
+  isActive    Boolean   @default(true)
+  position    Int       @default(0)
+
+  categoryId  Int?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  products    Product[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([position])
+}
+
+model Brand {
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String    @unique
+  products  Product[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id                Int            @id @default(autoincrement())
+  code              String?        @unique
+  name              String
+  slug              String         @unique
+  descriptionShort  String?        @db.VarChar(500)
+  descriptionLong   String?        @db.Text
+  price             Decimal?       @db.Decimal(12, 2)
+
+  categoryId        Int?
+  subcategoryId     Int?
+  brandId           Int?
+
+  category          Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  subcategory       Subcategory?   @relation(fields: [subcategoryId], references: [id], onDelete: SetNull)
+  brand             Brand?         @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  images            ProductImage[]
+
+  isActive          Boolean        @default(true)
+  isFeatured        Boolean        @default(false)
+  isOffer           Boolean        @default(false)
+
+  metaTitle         String?        @db.VarChar(180)
+  metaDescription   String?        @db.VarChar(300)
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  @@index([categoryId])
+  @@index([subcategoryId])
+  @@index([brandId])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([isOffer])
+  @@index([price])
+}
+
+model ProductImage {
+  id         Int      @id @default(autoincrement())
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  url        String   @db.VarChar(1000)
+  alt        String?  @db.VarChar(255)
+  position   Int      @default(0)
+  isPrimary  Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([productId])
+  @@index([position])
+  @@index([isPrimary])
+}
+
+model SiteSetting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String   @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
