@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/formatters";
 import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
+import { ProductGallery } from "@/components/products/ProductGallery";
 
 export const dynamic = "force-dynamic";
 
@@ -119,40 +120,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-[2rem] border border-[var(--border)] bg-white p-5 shadow-sm">
-          <div className="aspect-square overflow-hidden rounded-[1.5rem] bg-[var(--surface-muted)]">
-            {primaryImage ? (
-              <img
-                src={primaryImage.url}
-                alt={primaryImage.alt ?? product.name}
-                className="h-full w-full object-contain p-6"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--brand-blue-soft)] to-white p-6">
-                <div className="flex h-32 w-32 items-center justify-center rounded-full bg-white text-6xl font-black text-[var(--brand-blue)] shadow-sm">
-                  {product.name.charAt(0).toUpperCase()}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {product.images.length > 1 ? (
-            <div className="mt-4 grid grid-cols-4 gap-3">
-              {product.images.slice(0, 4).map((image) => (
-                <div
-                  key={image.id}
-                  className="aspect-square overflow-hidden rounded-2xl border border-[var(--border)] bg-white"
-                >
-                  <img
-                    src={image.url}
-                    alt={image.alt ?? product.name}
-                    className="h-full w-full object-contain p-2"
-                  />
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
+        <ProductGallery productName={product.name} images={product.images} />
 
         <div className="rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-sm lg:p-8">
           <div className="flex flex-wrap gap-2">

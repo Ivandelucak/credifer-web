@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
+import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 import { prisma } from "@/lib/prisma";
 
 type EditProductPageProps = {
@@ -42,6 +43,16 @@ export default async function EditProductPage({
         isOffer: true,
         metaTitle: true,
         metaDescription: true,
+        images: {
+          orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
+          select: {
+            id: true,
+            url: true,
+            alt: true,
+            position: true,
+            isPrimary: true,
+          },
+        },
       },
     }),
     prisma.category.findMany({
@@ -80,8 +91,21 @@ export default async function EditProductPage({
   }
 
   const serializedProduct = {
-    ...product,
+    id: product.id,
+    code: product.code,
+    name: product.name,
+    slug: product.slug,
     price: product.price ? product.price.toString() : null,
+    descriptionShort: product.descriptionShort,
+    descriptionLong: product.descriptionLong,
+    categoryId: product.categoryId,
+    subcategoryId: product.subcategoryId,
+    brandId: product.brandId,
+    isActive: product.isActive,
+    isFeatured: product.isFeatured,
+    isOffer: product.isOffer,
+    metaTitle: product.metaTitle,
+    metaDescription: product.metaDescription,
   };
 
   return (
@@ -120,6 +144,14 @@ export default async function EditProductPage({
             </Link>
           </div>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <ProductImagesManager
+          productId={product.id}
+          productName={product.name}
+          images={product.images}
+        />
       </div>
 
       <ProductEditForm
