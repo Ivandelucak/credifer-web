@@ -8,6 +8,8 @@ import {
 import { formatCurrency } from "@/lib/formatters";
 import { prisma } from "@/lib/prisma";
 import { AdminProductSearchInput } from "@/components/admin/AdminProductSearchInput";
+import { ProductSoftDeleteButton } from "@/components/admin/ProductSoftDeleteButton";
+import { ProductRestoreButton } from "@/components/admin/ProductRestoreButton";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +32,7 @@ const statusOptions = [
   { label: "Sin precio", value: "sin-precio" },
   { label: "Destacados", value: "destacados" },
   { label: "Ofertas", value: "ofertas" },
+  { label: "Eliminados", value: "eliminados" },
 ];
 
 const orderOptions = [
@@ -108,6 +111,15 @@ export default async function AdminProductsPage({
   });
 
   const where: Prisma.ProductWhereInput = {
+    ...(selectedStatus === "eliminados"
+      ? {
+          deletedAt: {
+            not: null,
+          },
+        }
+      : {
+          deletedAt: null,
+        }),
     ...(query
       ? {
           OR: [
@@ -183,6 +195,7 @@ export default async function AdminProductsPage({
     activeProducts,
     inactiveProducts,
     productsWithoutPrice,
+    deletedProducts,
   ] = await Promise.all([
     prisma.product.findMany({
       where,
@@ -229,16 +242,26 @@ export default async function AdminProductsPage({
     prisma.product.count({
       where: {
         isActive: true,
+        deletedAt: null,
       },
     }),
     prisma.product.count({
       where: {
         isActive: false,
+        deletedAt: null,
       },
     }),
     prisma.product.count({
       where: {
         price: null,
+        deletedAt: null,
+      },
+    }),
+    prisma.product.count({
+      where: {
+        deletedAt: {
+          not: null,
+        },
       },
     }),
   ]);
@@ -629,6 +652,17 @@ export default async function AdminProductsPage({
                         {product.isOffer ? "Quitar oferta" : "Oferta"}
                       </button>
                     </form>
+                    {selectedStatus === "eliminados" ? (
+                      <ProductRestoreButton
+                        productId={product.id}
+                        returnTo={currentUrl}
+                      />
+                    ) : (
+                      <ProductSoftDeleteButton
+                        productId={product.id}
+                        returnTo={currentUrl}
+                      />
+                    )}
                   </div>
                 </article>
               );

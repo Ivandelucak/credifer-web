@@ -103,3 +103,61 @@ export async function toggleProductOffer(formData: FormData) {
 
   redirect(returnTo);
 }
+
+export async function softDeleteProduct(formData: FormData) {
+  await requireAdmin();
+
+  const productId = Number(formData.get("productId"));
+  const returnTo = getSafeReturnTo(formData.get("returnTo"));
+
+  if (!productId || Number.isNaN(productId)) {
+    redirect(returnTo);
+  }
+
+  await prisma.product.update({
+    where: {
+      id: productId,
+    },
+    data: {
+      isActive: false,
+      deletedAt: new Date(),
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/productos");
+  revalidatePath("/productos");
+  revalidatePath("/categorias");
+  revalidatePath("/ofertas");
+
+  redirect(returnTo);
+}
+
+export async function restoreProduct(formData: FormData) {
+  await requireAdmin();
+
+  const productId = Number(formData.get("productId"));
+  const returnTo = getSafeReturnTo(formData.get("returnTo"));
+
+  if (!productId || Number.isNaN(productId)) {
+    redirect(returnTo);
+  }
+
+  await prisma.product.update({
+    where: {
+      id: productId,
+    },
+    data: {
+      isActive: true,
+      deletedAt: null,
+    },
+  });
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/productos");
+  revalidatePath("/productos");
+  revalidatePath("/categorias");
+  revalidatePath("/ofertas");
+
+  redirect(returnTo);
+}

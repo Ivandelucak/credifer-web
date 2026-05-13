@@ -14,12 +14,19 @@ export default async function AdminDashboardPage() {
     prisma.product.count(),
     prisma.product.count({
       where: {
+        deletedAt: null,
+      },
+    }),
+    prisma.product.count({
+      where: {
         isActive: true,
+        deletedAt: null,
       },
     }),
     prisma.product.count({
       where: {
         price: null,
+        deletedAt: null,
       },
     }),
     prisma.category.count(),

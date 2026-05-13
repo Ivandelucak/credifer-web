@@ -20,6 +20,7 @@ async function getProduct(slug: string) {
     where: {
       slug,
       isActive: true,
+      deletedAt: null,
     },
     include: {
       category: true,

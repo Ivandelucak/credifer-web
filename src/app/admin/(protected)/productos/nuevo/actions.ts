@@ -1,13 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/slug";
 
-export type ProductEditFormState = {
-  success: boolean;
+export type ProductCreateFormState = {
   error: string | null;
 };
 
@@ -66,36 +64,30 @@ function parsePrice(value: string | null) {
   return numberValue.toFixed(2);
 }
 
-async function ensureUniqueSlug({
-  slug,
-  productId,
-}: {
-  slug: string;
-  productId: number;
-}) {
-  const existingProduct = await prisma.product.findUnique({
-    where: {
-      slug,
-    },
-    select: {
-      id: true,
-    },
-  });
+async function createUniqueSlug(baseSlug: string) {
+  let slug = baseSlug || "producto";
+  let suffix = 2;
 
-  if (existingProduct && existingProduct.id !== productId) {
-    return false;
+  while (true) {
+    const existingProduct = await prisma.product.findUnique({
+      where: {
+        slug,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!existingProduct) {
+      return slug;
+    }
+
+    slug = `${baseSlug}-${suffix}`;
+    suffix += 1;
   }
-
-  return true;
 }
 
-async function ensureUniqueCode({
-  code,
-  productId,
-}: {
-  code: string | null;
-  productId: number;
-}) {
+async function ensureUniqueCode(code: string | null) {
   if (!code) return true;
 
   const existingProduct = await prisma.product.findUnique({
@@ -107,11 +99,7 @@ async function ensureUniqueCode({
     },
   });
 
-  if (existingProduct && existingProduct.id !== productId) {
-    return false;
-  }
-
-  return true;
+  return !existingProduct;
 }
 
 async function validateCategory(categoryId: number | null) {
@@ -159,42 +147,11 @@ async function validateBrand(brandId: number | null) {
   return Boolean(brand);
 }
 
-export async function updateProduct(
-  _previousState: ProductEditFormState,
+export async function createProduct(
+  _previousState: ProductCreateFormState,
   formData: FormData,
-): Promise<ProductEditFormState> {
+): Promise<ProductCreateFormState> {
   await requireAdmin();
-
-  const productId = Number(formData.get("productId"));
-
-  if (!productId || Number.isNaN(productId)) {
-    return {
-      success: false,
-      error: "Producto inválido.",
-    };
-  }
-
-  const currentProduct = await prisma.product.findUnique({
-    where: {
-      id: productId,
-    },
-    select: {
-      id: true,
-      slug: true,
-      category: {
-        select: {
-          slug: true,
-        },
-      },
-    },
-  });
-
-  if (!currentProduct) {
-    return {
-      success: false,
-      error: "El producto no existe.",
-    };
-  }
 
   const name = getStringValue(formData, "name");
   const code = getStringValue(formData, "code");
@@ -217,16 +174,14 @@ export async function updateProduct(
 
   if (!name) {
     return {
-      success: false,
       error: "El nombre del producto es obligatorio.",
     };
   }
 
-  const slug = slugify(requestedSlug || name);
+  const baseSlug = slugify(requestedSlug || name);
 
-  if (!slug) {
+  if (!baseSlug) {
     return {
-      success: false,
       error: "No se pudo generar una URL válida para el producto.",
     };
   }
@@ -235,31 +190,14 @@ export async function updateProduct(
 
   if (parsedPrice === "INVALID_PRICE") {
     return {
-      success: false,
       error: "El precio ingresado no es válido.",
     };
   }
 
-  const slugIsAvailable = await ensureUniqueSlug({
-    slug,
-    productId,
-  });
-
-  if (!slugIsAvailable) {
-    return {
-      success: false,
-      error: "Ya existe otro producto con ese slug/URL.",
-    };
-  }
-
-  const codeIsAvailable = await ensureUniqueCode({
-    code,
-    productId,
-  });
+  const codeIsAvailable = await ensureUniqueCode(code);
 
   if (!codeIsAvailable) {
     return {
-      success: false,
       error: "Ya existe otro producto con ese código.",
     };
   }
@@ -268,7 +206,6 @@ export async function updateProduct(
 
   if (!categoryIsValid) {
     return {
-      success: false,
       error: "La categoría seleccionada no existe.",
     };
   }
@@ -277,7 +214,6 @@ export async function updateProduct(
 
   if (!subcategoryIsValid) {
     return {
-      success: false,
       error: "La subcategoría seleccionada no existe.",
     };
   }
@@ -286,22 +222,24 @@ export async function updateProduct(
 
   if (!brandIsValid) {
     return {
-      success: false,
       error: "La marca seleccionada no existe.",
     };
   }
 
-  await prisma.product.update({
-    where: {
-      id: productId,
-    },
+  const slug = await createUniqueSlug(baseSlug);
+
+  const product = await prisma.product.create({
     data: {
       name,
       code,
       slug,
       price: parsedPrice,
-      descriptionShort,
-      descriptionLong,
+      descriptionShort:
+        descriptionShort ||
+        `${name}. Producto disponible en Credifer para consultar financiación por WhatsApp.`,
+      descriptionLong:
+        descriptionLong ||
+        `${name}. Producto disponible en Credifer. El precio publicado corresponde a precio contado; cuotas, promociones y condiciones se coordinan por WhatsApp.`,
       categoryId,
       subcategoryId,
       brandId,
@@ -313,20 +251,10 @@ export async function updateProduct(
         metaDescription ||
         `Consultá por ${name} en Credifer. Precio contado publicado y opciones de financiación por WhatsApp.`,
     },
+    select: {
+      id: true,
+    },
   });
 
-  revalidatePath("/admin");
-  revalidatePath("/admin/productos");
-  revalidatePath(`/admin/productos/${productId}/editar`);
-  revalidatePath("/productos");
-  revalidatePath("/categorias");
-  revalidatePath("/ofertas");
-  revalidatePath(`/producto/${currentProduct.slug}`);
-  revalidatePath(`/producto/${slug}`);
-
-  if (currentProduct.category?.slug) {
-    revalidatePath(`/${currentProduct.category.slug}`);
-  }
-
-  redirect("/admin/productos");
+  redirect(`/admin/productos/${product.id}/editar`);
 }

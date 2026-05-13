@@ -76,6 +76,7 @@ model Product {
   isActive          Boolean        @default(true)
   isFeatured        Boolean        @default(false)
   isOffer           Boolean        @default(false)
+  deletedAt DateTime?
 
   metaTitle         String?        @db.VarChar(180)
   metaDescription   String?        @db.VarChar(300)
@@ -90,7 +91,9 @@ model Product {
   @@index([isFeatured])
   @@index([isOffer])
   @@index([price])
+  @@index([deletedAt])
 }
+
 
 model ProductImage {
   id         Int      @id @default(autoincrement())

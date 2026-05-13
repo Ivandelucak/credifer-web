@@ -57,6 +57,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   const products = await prisma.product.findMany({
     where: {
       isActive: true,
+      deletedAt: null,
       categoryId: category.id,
     },
     orderBy: [

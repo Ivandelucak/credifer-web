@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
 import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 import { prisma } from "@/lib/prisma";
+import { ProductSoftDeleteButton } from "@/components/admin/ProductSoftDeleteButton";
 
 type EditProductPageProps = {
   params: Promise<{
@@ -142,6 +143,12 @@ export default async function EditProductPage({
             >
               Ver público
             </Link>
+            <ProductSoftDeleteButton
+              productId={product.id}
+              returnTo="/admin/productos"
+              label="Eliminar producto"
+              className="inline-flex justify-center rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 transition hover:border-red-300 focus-ring"
+            />
           </div>
         </div>
       </div>

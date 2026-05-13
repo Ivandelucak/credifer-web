@@ -19,6 +19,7 @@ export default async function CategoriesPage() {
           products: {
             where: {
               isActive: true,
+              deletedAt: null,
             },
           },
         },

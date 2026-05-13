@@ -58,6 +58,7 @@ export default async function ProductsPage({
 
   const where: Prisma.ProductWhereInput = {
     isActive: true,
+    deletedAt: null,
     ...(selectedCategory
       ? {
           category: {

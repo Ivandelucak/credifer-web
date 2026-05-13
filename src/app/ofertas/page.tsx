@@ -7,6 +7,7 @@ export default async function OffersPage() {
   const products = await prisma.product.findMany({
     where: {
       isActive: true,
+      deletedAt: null,
       isOffer: true,
     },
     orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
