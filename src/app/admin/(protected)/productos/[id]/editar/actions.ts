@@ -240,6 +240,13 @@ export async function updateProduct(
     };
   }
 
+  if (parsedPrice === "PRICE_TOO_HIGH") {
+    return {
+      success: false,
+      error: "El precio ingresado es demasiado alto.",
+    };
+  }
+
   const slugIsAvailable = await ensureUniqueSlug({
     slug,
     productId,

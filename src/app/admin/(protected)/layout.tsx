@@ -17,6 +17,10 @@ const adminNavItems = [
     href: "/admin/categorias",
   },
   {
+    label: "Marcas",
+    href: "/admin/marcas",
+  },
+  {
     label: "Importar",
     href: "/admin/importar",
   },

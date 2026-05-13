@@ -52,13 +52,24 @@ function parsePrice(value: string | null) {
   if (hasComma && hasDot) {
     cleanValue = cleanValue.replace(/\./g, "").replace(",", ".");
   } else if (hasComma) {
-    cleanValue = cleanValue.replace(",", ".");
+    cleanValue = cleanValue.replace(/\./g, "").replace(",", ".");
+  } else if (hasDot) {
+    const parts = cleanValue.split(".");
+    const lastPart = parts[parts.length - 1];
+
+    if (lastPart.length === 3 && parts.length > 1) {
+      cleanValue = cleanValue.replace(/\./g, "");
+    }
   }
 
   const numberValue = Number(cleanValue);
 
   if (!Number.isFinite(numberValue) || numberValue < 0) {
     return "INVALID_PRICE";
+  }
+
+  if (numberValue > 9999999999.99) {
+    return "PRICE_TOO_HIGH";
   }
 
   return numberValue.toFixed(2);
@@ -191,6 +202,12 @@ export async function createProduct(
   if (parsedPrice === "INVALID_PRICE") {
     return {
       error: "El precio ingresado no es válido.",
+    };
+  }
+
+  if (parsedPrice === "PRICE_TOO_HIGH") {
+    return {
+      error: "El precio ingresado es demasiado alto.",
     };
   }
 

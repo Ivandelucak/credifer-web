@@ -57,7 +57,7 @@ export default async function AdminDashboardPage() {
     {
       label: "Marcas",
       value: totalBrands,
-      href: "/admin/productos",
+      href: "/admin/marcas",
     },
   ];
 

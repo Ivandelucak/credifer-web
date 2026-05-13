@@ -322,12 +322,21 @@ export default async function AdminProductsPage({
             </p>
           </div>
 
-          <Link
-            href="/admin/productos/nuevo"
-            className="inline-flex justify-center rounded-full bg-[var(--brand-blue)] px-5 py-3 text-sm font-black text-white transition hover:bg-[var(--brand-blue-dark)] focus-ring"
-          >
-            Nuevo producto
-          </Link>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/admin/marcas"
+              className="inline-flex justify-center rounded-full border border-[var(--border-strong)] bg-white px-5 py-3 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
+            >
+              Gestionar marcas
+            </Link>
+
+            <Link
+              href="/admin/productos/nuevo"
+              className="inline-flex justify-center rounded-full bg-[var(--brand-blue)] px-5 py-3 text-sm font-black text-white transition hover:bg-[var(--brand-blue-dark)] focus-ring"
+            >
+              Nuevo producto
+            </Link>
+          </div>
         </div>
       </div>
 
