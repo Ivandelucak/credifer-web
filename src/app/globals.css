@@ -32,6 +32,13 @@
 
   --shadow-soft: 0 18px 45px rgba(15, 23, 42, 0.08);
   --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.07);
+
+  --catalog-bg: #eef3f8;
+  --catalog-surface: #fbfdff;
+  --catalog-surface-soft: #f5f7fb;
+  --catalog-border: #cbd5e1;
+  --catalog-border-strong: #94a3b8;
+  --catalog-shadow: 0 14px 34px rgba(15, 23, 42, 0.09);
 }
 
 * {

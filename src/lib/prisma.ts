@@ -1,33 +1,24 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
-function createMariaDbAdapter() {
-  const databaseUrl = process.env.DATABASE_URL;
-
-  if (!databaseUrl) {
-    throw new Error("DATABASE_URL no está configurada en el archivo .env");
-  }
-
-  const url = new URL(databaseUrl);
-
-  return new PrismaMariaDb({
-    host: url.hostname,
-    port: Number(url.port || 3306),
-    user: decodeURIComponent(url.username),
-    password: decodeURIComponent(url.password),
-    database: url.pathname.replace("/", ""),
-    connectionLimit: 5,
-  });
-}
-
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+const adapter = new PrismaMariaDb({
+  host: process.env.DB_HOST ?? "localhost",
+  port: Number(process.env.DB_PORT ?? 3306),
+  user: process.env.DB_USER ?? "credifer_user",
+  password: process.env.DB_PASSWORD ?? "",
+  database: process.env.DB_NAME ?? "credifer_web",
+  connectionLimit: 10,
+  allowPublicKeyRetrieval: true,
+});
+
 export const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    adapter: createMariaDbAdapter(),
+    adapter,
     log:
       process.env.NODE_ENV === "development"
         ? ["query", "error", "warn"]
