@@ -106,3 +106,53 @@ img {
 .focus-ring:focus-visible {
   box-shadow: 0 0 0 3px rgba(2, 100, 169, 0.22);
 }
+
+@keyframes crediferOverlayFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes crediferSideNavIn {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tap-feedback {
+  position: relative;
+  overflow: hidden;
+  transform: translateY(0) scale(1);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease;
+}
+
+.tap-feedback::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.22);
+  opacity: 0;
+  transition: opacity 140ms ease;
+  pointer-events: none;
+}
+
+.tap-feedback:active {
+  transform: translateY(1px) scale(0.97);
+  filter: brightness(0.98);
+}
+
+.tap-feedback:active::after {
+  opacity: 1;
+}

@@ -36,7 +36,7 @@ const footerLinks = [
 
 const paymentBenefits = [
   "Cuota semanal",
-  "Cuota Simple 3 y 6",
+  "Cuota Simple",
   "Tarjetas",
   "Efectivo",
   "Transferencia",
@@ -49,62 +49,107 @@ export function Footer() {
     "Hola Credifer, quiero hacer una consulta desde la tienda online.",
   )}`;
 
-  return (
-    <footer className="relative overflow-hidden border-t border-[#B7CADA] bg-[var(--brand-blue-dark)] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_10%,rgba(2,100,169,0.38),transparent_28%),radial-gradient(circle_at_80%_0%,rgba(37,211,102,0.16),transparent_24%),radial-gradient(circle_at_60%_90%,rgba(244,196,48,0.12),transparent_30%)]" />
+  const instagramUrl = "https://www.instagram.com/cell.sur/";
 
-      <div className="container-page relative py-9 lg:py-11">
-        <div className="grid gap-8 lg:grid-cols-[1.2fr_1.8fr] lg:items-start">
-          <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.08] p-5 shadow-[0_16px_38px_rgba(0,0,0,0.14)] backdrop-blur">
-            <div className="inline-flex rounded-2xl bg-white px-4 py-3 shadow-[0_12px_28px_rgba(15,23,42,0.16)]">
-              <div className="relative h-12 w-32">
+  return (
+    <footer className="border-t border-[#0B3558]/20 bg-[linear-gradient(135deg,#0B3558_0%,#0E4B68_58%,#0D5A5E_100%)] text-white">
+      <div className="container-page py-10 lg:py-12">
+        <div className="grid gap-9 lg:grid-cols-[1.25fr_1.6fr] lg:items-start">
+          <div>
+            <div className="inline-flex items-center gap-4 rounded-[1.5rem] border border-white/12 bg-white/[0.08] p-3 pr-5 shadow-[0_18px_42px_rgba(8,47,73,0.16)]">
+              <div className="relative h-14 w-32 overflow-hidden rounded-2xl bg-white p-2 shadow-sm">
                 <Image
                   src="/brand/logo-credifer.png"
                   alt="Credifer"
                   fill
-                  sizes="144px"
-                  className="object-contain object-left"
+                  sizes="128px"
+                  className="object-contain p-2"
                 />
+              </div>
+
+              <div className="hidden border-l border-white/14 pl-4 sm:block">
+                <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white/58">
+                  Catálogo Credifer
+                </p>
+                <p className="mt-1 text-sm font-black leading-5 text-white">
+                  Productos, cuotas y atención personalizada.
+                </p>
               </div>
             </div>
 
-            <h2 className="mt-5 text-xl font-black leading-tight tracking-[-0.025em]">
-              Productos, cuotas y atención personalizada.
-            </h2>
-
-            <p className="mt-4 max-w-md text-sm leading-6 text-white/72">
-              Explorá el catálogo Credifer, armá tu consulta y coordiná
-              financiación, disponibilidad y entrega con un asesor.
+            <p className="mt-5 max-w-md text-sm leading-6 text-white/72">
+              Explorá productos, armá tu consulta y coordiná financiación,
+              disponibilidad y entrega con un asesor.
             </p>
 
             <div className="mt-5 flex flex-wrap gap-2">
               {paymentBenefits.map((benefit) => (
                 <span
                   key={benefit}
-                  className="rounded-full border border-white/10 bg-white/[0.10] px-3 py-1.5 text-xs font-black uppercase tracking-[0.1em] text-white/88"
+                  className="rounded-full border border-white/12 bg-white/[0.08] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-white/78"
                 >
                   {benefit}
                 </span>
               ))}
             </div>
 
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-6 inline-flex rounded-2xl bg-[var(--whatsapp)] px-5 py-3 text-sm font-black text-slate-950 shadow-[0_14px_30px_rgba(37,211,102,0.26)] transition hover:-translate-y-0.5 hover:bg-[var(--whatsapp-dark)] hover:text-white focus-ring"
-            >
-              Consultar por WhatsApp
-            </a>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tap-feedback inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-[var(--whatsapp)] px-4 py-2.5 text-sm font-black text-slate-950 shadow-[0_12px_26px_rgba(37,211,102,0.22)] transition hover:-translate-y-0.5 hover:bg-[var(--whatsapp-dark)] hover:text-white focus-ring"
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 32 32"
+                  className="h-5 w-5"
+                  fill="currentColor"
+                >
+                  <path d="M16.04 3.2A12.74 12.74 0 0 0 5.18 22.6L3.6 28.8l6.35-1.52A12.8 12.8 0 1 0 16.04 3.2Zm0 2.33a10.46 10.46 0 1 1-5.32 19.47l-.38-.22-3.77.9.94-3.66-.25-.39A10.46 10.46 0 0 1 16.04 5.53Zm-4.12 4.78c-.23 0-.6.08-.92.43-.31.34-1.2 1.17-1.2 2.84s1.23 3.3 1.4 3.52c.17.23 2.38 3.82 5.87 5.2 2.9 1.14 3.5.92 4.13.86.64-.06 2.05-.84 2.34-1.65.29-.81.29-1.5.2-1.65-.09-.14-.32-.23-.67-.4-.34-.17-2.05-1-2.37-1.12-.31-.12-.54-.17-.77.17-.23.35-.88 1.12-1.08 1.35-.2.23-.4.26-.75.09-.35-.17-1.45-.53-2.76-1.7-1.02-.9-1.71-2.02-1.91-2.36-.2-.35-.02-.54.15-.7.15-.15.35-.4.52-.6.17-.2.23-.34.35-.57.12-.23.06-.43-.03-.6-.09-.17-.78-1.9-1.08-2.6-.28-.68-.57-.58-.78-.6h-.65Z" />
+                </svg>
+                WhatsApp
+              </a>
+
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="tap-feedback inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/16 bg-white/[0.08] px-4 py-2.5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:border-white/28 hover:bg-white/[0.12] focus-ring"
+              >
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 24 24"
+                  className="h-5 w-5"
+                  fill="none"
+                >
+                  <rect
+                    x="3"
+                    y="3"
+                    width="18"
+                    height="18"
+                    rx="5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  />
+                  <circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" />
+                </svg>
+                Instagram
+              </a>
+            </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-7 sm:grid-cols-3">
             {footerLinks.map((group) => (
-              <div
-                key={group.title}
-                className="rounded-[1.4rem] border border-white/10 bg-white/[0.06] p-4"
-              >
-                <h3 className="mb-4 text-xs font-black uppercase tracking-[0.2em] text-white/58">
+              <div key={group.title}>
+                <h3 className="mb-4 text-xs font-black uppercase tracking-[0.22em] text-white/48">
                   {group.title}
                 </h3>
 
@@ -113,7 +158,7 @@ export function Footer() {
                     <li key={`${group.title}-${link.href}-${link.label}`}>
                       <Link
                         href={link.href}
-                        className="rounded-md text-sm font-bold text-white/82 transition hover:text-white focus-ring"
+                        className="rounded-md text-sm font-black text-white/88 transition hover:text-[var(--brand-yellow)] focus-ring"
                       >
                         {link.label}
                       </Link>
@@ -125,7 +170,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-7 border-t border-white/10 pt-4">
+        <div className="mt-10 border-t border-white/10 pt-5">
           <div className="flex flex-col gap-3 text-xs text-white/58 sm:flex-row sm:items-center sm:justify-between">
             <p>© {currentYear} Credifer. Todos los derechos reservados.</p>
 

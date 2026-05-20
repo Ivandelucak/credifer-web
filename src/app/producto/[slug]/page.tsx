@@ -8,6 +8,7 @@ import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { ProductGallery } from "@/components/products/ProductGallery";
 import { ProductCard } from "@/components/products/ProductCard";
 import { RelatedProductsCarousel } from "@/components/products/RelatedProductsCarousel";
+import { BackButton } from "@/components/layout/BackButton";
 
 export const dynamic = "force-dynamic";
 
@@ -194,39 +195,42 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(2,100,169,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(2,100,169,0.14)_1px,transparent_1px)] [background-size:44px_44px]" />
 
         <div className="container-page relative py-8 lg:py-10">
-          <div className="mb-6 flex flex-wrap items-center gap-2 text-sm font-black text-[var(--text-secondary)]">
-            <Link
-              href="/productos"
-              className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
-            >
-              Productos
-            </Link>
+          <div className="mb-6 flex flex-wrap items-center gap-3">
+            <BackButton fallbackHref="/productos" label="Volver" />
 
-            {product.category ? (
-              <>
-                <span className="text-[var(--text-muted)]">/</span>
-                <Link
-                  href={`/${product.category.slug}`}
-                  className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
-                >
-                  {product.category.name}
-                </Link>
-              </>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2 text-sm font-black text-[var(--text-secondary)]">
+              <Link
+                href="/productos"
+                className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
+              >
+                Productos
+              </Link>
 
-            {product.subcategory ? (
-              <>
-                <span className="text-[var(--text-muted)]">/</span>
-                <Link
-                  href={`/${product.subcategory.slug}`}
-                  className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
-                >
-                  {product.subcategory.name}
-                </Link>
-              </>
-            ) : null}
+              {product.category ? (
+                <>
+                  <span className="text-[var(--text-muted)]">/</span>
+                  <Link
+                    href={`/${product.category.slug}`}
+                    className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
+                  >
+                    {product.category.name}
+                  </Link>
+                </>
+              ) : null}
+
+              {product.subcategory ? (
+                <>
+                  <span className="text-[var(--text-muted)]">/</span>
+                  <Link
+                    href={`/${product.subcategory.slug}`}
+                    className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
+                  >
+                    {product.subcategory.name}
+                  </Link>
+                </>
+              ) : null}
+            </div>
           </div>
-
           <div className="grid gap-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <ProductGallery
               productName={product.name}

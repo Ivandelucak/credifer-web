@@ -5,6 +5,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { WhatsAppFloatingButton } from "@/components/layout/WhatsAppFloatingButton";
 import { CartProvider } from "@/components/cart/CartProvider";
+import { Suspense } from "react";
+import { NavigationMemory } from "@/components/layout/NavigationMemory";
 
 export const metadata: Metadata = {
   title: {
@@ -35,6 +37,9 @@ export default function RootLayout({
   return (
     <html lang="es-AR">
       <body>
+        <Suspense fallback={null}>
+          <NavigationMemory />
+        </Suspense>
         <CartProvider>
           <Header />
           <main>{children}</main>

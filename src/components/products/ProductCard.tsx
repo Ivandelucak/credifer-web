@@ -55,18 +55,18 @@ export function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[1.65rem] border border-[var(--catalog-border)] bg-white shadow-[0_10px_26px_rgba(15,23,42,0.07)] transition duration-200 hover:-translate-y-1 hover:border-[var(--brand-blue)] hover:shadow-[var(--catalog-shadow)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[1.4rem] border border-[var(--catalog-border)] bg-white shadow-[0_10px_24px_rgba(15,23,42,0.065)] transition duration-200 hover:-translate-y-1 hover:border-[var(--brand-blue)] hover:shadow-[var(--catalog-shadow)] sm:rounded-[1.65rem]">
       <Link
         href={`/producto/${product.slug}`}
         className="block focus-ring"
         aria-label={`Ver producto ${product.name}`}
       >
-        <div className="relative h-[220px] overflow-hidden border-b border-[var(--catalog-border)] bg-[linear-gradient(135deg,#F8FBFE_0%,#EEF6FC_100%)]">
+        <div className="relative h-[180px] overflow-hidden border-b border-[var(--catalog-border)] bg-[linear-gradient(135deg,#F8FBFE_0%,#EEF6FC_100%)] sm:h-[220px]">
           {primaryImage ? (
             <img
               src={primaryImage.url}
               alt={primaryImage.alt ?? product.name}
-              className="h-full w-full object-contain p-5 transition duration-300 group-hover:scale-[1.035]"
+              className="h-full w-full object-contain p-4 transition duration-300 group-hover:scale-[1.035] sm:p-5"
             />
           ) : (
             <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-6">
@@ -105,7 +105,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
 
-      <div className="flex flex-1 flex-col bg-[#F8FBFE] p-4">
+      <div className="flex flex-1 flex-col bg-[#F8FBFE] p-3.5 sm:p-4">
         <div className="mb-3 flex min-h-7 flex-wrap gap-2">
           <Link
             href={categoryHref}
@@ -125,28 +125,28 @@ export function ProductCard({ product }: ProductCardProps) {
           href={`/producto/${product.slug}`}
           className="focus-ring rounded-xl"
         >
-          <h3 className="line-clamp-2 min-h-12 text-[15px] font-black leading-6 text-[var(--text-primary)] transition group-hover:text-[var(--brand-blue)]">
+          <h3 className="line-clamp-2 text-[15px] font-black leading-6 text-[var(--text-primary)] transition group-hover:text-[var(--brand-blue)] sm:min-h-12">
             {product.name}
           </h3>
         </Link>
 
         {product.descriptionShort ? (
-          <p className="mt-2 line-clamp-2 min-h-11 text-sm leading-6 text-[var(--text-secondary)]">
+          <p className="mt-2 line-clamp-1 text-sm leading-6 text-[var(--text-secondary)] sm:line-clamp-2 sm:min-h-11">
             {product.descriptionShort}
           </p>
         ) : (
-          <p className="mt-2 min-h-11 text-sm leading-6 text-[var(--text-secondary)]">
+          <p className="mt-2 line-clamp-1 text-sm leading-6 text-[var(--text-secondary)] sm:line-clamp-2 sm:min-h-11">
             Producto disponible para consultar precio, cuotas y disponibilidad.
           </p>
         )}
 
         <div className="mt-auto pt-4">
-          <div className="rounded-2xl border border-[#C9D6E4] bg-white px-4 py-3 shadow-sm">
+          <div className="rounded-2xl border border-[#C9D6E4] bg-white px-3.5 py-3 shadow-sm sm:px-4">
             <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">
               Precio contado
             </p>
 
-            <p className="mt-1 text-2xl font-black tracking-tight text-[var(--brand-blue-dark)]">
+            <p className="mt-1 text-xl font-black tracking-tight text-[var(--brand-blue-dark)] sm:text-2xl">
               {priceLabel}
             </p>
           </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ProductCard } from "@/components/products/ProductCard";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
+import { CatalogFilters } from "@/components/products/CatalogFilters";
 
 export const dynamic = "force-dynamic";
 
@@ -623,138 +624,19 @@ export default async function ProductsPage({
 
       <div className="container-page py-7 lg:py-9">
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-          <aside className="h-fit rounded-[2rem] border border-[var(--catalog-border-strong)] bg-white p-5 shadow-[var(--catalog-shadow)] lg:sticky lg:top-28">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--brand-blue)]">
-                  Filtros
-                </p>
-
-                <h2 className="mt-1 text-xl font-black text-[var(--text-primary)]">
-                  Refinar catálogo
-                </h2>
-
-                {activeFiltersCount > 0 ? (
-                  <p className="mt-1 text-xs font-bold text-[var(--text-muted)]">
-                    {activeFiltersCount} filtro
-                    {activeFiltersCount === 1 ? "" : "s"} activo
-                    {activeFiltersCount === 1 ? "" : "s"}.
-                  </p>
-                ) : null}
-              </div>
-
-              {hasFilters ? (
-                <Link
-                  href="/productos"
-                  className="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
-                >
-                  Limpiar
-                </Link>
-              ) : null}
-            </div>
-
-            <form className="mt-5 grid gap-4" action="/productos">
-              {query ? <input type="hidden" name="q" value={query} /> : null}
-
-              <div>
-                <label
-                  htmlFor="categoria"
-                  className="mb-2 block text-sm font-black text-[var(--text-primary)]"
-                >
-                  Categoría
-                </label>
-
-                <select
-                  id="categoria"
-                  name="categoria"
-                  defaultValue={selectedCategory}
-                  className="h-12 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
-                >
-                  <option value="">Todas</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.slug}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="subcategoria"
-                  className="mb-2 block text-sm font-black text-[var(--text-primary)]"
-                >
-                  Subcategoría
-                </label>
-
-                <select
-                  id="subcategoria"
-                  name="subcategoria"
-                  defaultValue={selectedSubcategory}
-                  className="h-12 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
-                >
-                  <option value="">Todas</option>
-                  {subcategories.map((subcategory) => (
-                    <option key={subcategory.id} value={subcategory.slug}>
-                      {subcategory.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="marca"
-                  className="mb-2 block text-sm font-black text-[var(--text-primary)]"
-                >
-                  Marca
-                </label>
-
-                <select
-                  id="marca"
-                  name="marca"
-                  defaultValue={selectedBrand}
-                  className="h-12 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
-                >
-                  <option value="">Todas</option>
-                  {brands.map((brand) => (
-                    <option key={brand.id} value={brand.slug}>
-                      {brand.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="orden"
-                  className="mb-2 block text-sm font-black text-[var(--text-primary)]"
-                >
-                  Orden
-                </label>
-
-                <select
-                  id="orden"
-                  name="orden"
-                  defaultValue={selectedOrder}
-                  className="h-12 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
-                >
-                  {orderOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                className="h-12 rounded-2xl bg-[var(--brand-blue)] px-5 text-sm font-black text-white shadow-[0_12px_24px_rgba(2,100,169,0.18)] transition hover:-translate-y-0.5 hover:bg-[var(--brand-blue-dark)] focus-ring"
-              >
-                Aplicar filtros
-              </button>
-            </form>
-          </aside>
+          <CatalogFilters
+            categories={categories}
+            subcategories={subcategories}
+            brands={brands}
+            orderOptions={orderOptions}
+            query={query}
+            selectedCategory={selectedCategory}
+            selectedSubcategory={selectedSubcategory}
+            selectedBrand={selectedBrand}
+            selectedOrder={selectedOrder}
+            activeFiltersCount={activeFiltersCount}
+            hasFilters={Boolean(hasFilters)}
+          />
 
           <div>
             <div className="rounded-[2rem] border border-[var(--catalog-border)] bg-white p-5 shadow-sm">
