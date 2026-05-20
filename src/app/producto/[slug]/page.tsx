@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { ProductGallery } from "@/components/products/ProductGallery";
+import { ProductCard } from "@/components/products/ProductCard";
+import { RelatedProductsCarousel } from "@/components/products/RelatedProductsCarousel";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +16,24 @@ type ProductPageProps = {
     slug: string;
   }>;
 };
+
+const purchaseHighlights = [
+  {
+    label: "Cuotas",
+    value: "Opciones a consultar",
+    accent: "bg-[var(--brand-yellow)]",
+  },
+  {
+    label: "Entrega",
+    value: "Coordinada",
+    accent: "bg-[var(--brand-green)]",
+  },
+  {
+    label: "Atención",
+    value: "Personalizada",
+    accent: "bg-[var(--brand-red)]",
+  },
+];
 
 async function getProduct(slug: string) {
   return prisma.product.findFirst({
@@ -69,7 +89,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const priceLabel = formatCurrency(product.price?.toString() ?? null);
+  const priceLabel = formatCurrency(
+    product.price ? product.price.toString() : null,
+  );
+  const primaryImage = product.images[0] ?? null;
 
   const whatsappText = [
     "Hola Credifer, quiero consultar por este producto:",
@@ -85,8 +108,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
     siteConfig.whatsappNumber
   }?text=${encodeURIComponent(whatsappText)}`;
 
-  const primaryImage = product.images[0] ?? null;
-
   const cartProduct = {
     id: product.id,
     name: product.name,
@@ -94,115 +115,249 @@ export default async function ProductPage({ params }: ProductPageProps) {
     price: product.price ? product.price.toString() : null,
     imageUrl: primaryImage?.url ?? null,
     brandName: product.brand?.name ?? null,
-    categoryName: product.category?.name ?? null,
+    categoryName: product.subcategory?.name ?? product.category?.name ?? null,
   };
 
+  const relatedProducts = await prisma.product.findMany({
+    where: {
+      id: {
+        not: product.id,
+      },
+      isActive: true,
+      deletedAt: null,
+      ...(product.subcategoryId
+        ? {
+            subcategoryId: product.subcategoryId,
+          }
+        : product.categoryId
+          ? {
+              categoryId: product.categoryId,
+            }
+          : {}),
+    },
+    orderBy: [
+      { isFeatured: "desc" },
+      { isOffer: "desc" },
+      { createdAt: "desc" },
+    ],
+    take: 12,
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      price: true,
+      descriptionShort: true,
+      isFeatured: true,
+      isOffer: true,
+      category: {
+        select: {
+          name: true,
+          slug: true,
+        },
+      },
+      subcategory: {
+        select: {
+          name: true,
+          slug: true,
+        },
+      },
+      brand: {
+        select: {
+          name: true,
+        },
+      },
+      images: {
+        orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
+        take: 1,
+        select: {
+          url: true,
+          alt: true,
+        },
+      },
+    },
+  });
+
+  const serializedRelatedProducts = relatedProducts.map((relatedProduct) => ({
+    ...relatedProduct,
+    price: relatedProduct.price ? relatedProduct.price.toString() : null,
+  }));
+
+  const productDescription =
+    product.descriptionLong ??
+    product.descriptionShort ??
+    "Producto disponible para consultar precio contado, cuotas, financiación y disponibilidad.";
+
   return (
-    <section className="container-page py-10 lg:py-14">
-      <div className="mb-6 flex flex-wrap items-center gap-2 text-sm font-bold text-[var(--text-secondary)]">
-        <Link
-          href="/productos"
-          className="transition hover:text-[var(--brand-blue)] focus-ring rounded-md"
-        >
-          Productos
-        </Link>
+    <section className="bg-[var(--catalog-bg)]">
+      <div className="relative overflow-hidden border-b border-[#C9D6E4] bg-[linear-gradient(135deg,#EAF4FB_0%,#F8FBFF_42%,#FFF7D8_76%,#EAF8EF_100%)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(2,100,169,0.16),transparent_32%),radial-gradient(circle_at_82%_10%,rgba(123,170,53,0.12),transparent_28%),radial-gradient(circle_at_58%_88%,rgba(244,196,48,0.20),transparent_30%)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(2,100,169,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(2,100,169,0.14)_1px,transparent_1px)] [background-size:44px_44px]" />
 
-        {product.category ? (
-          <>
-            <span>/</span>
+        <div className="container-page relative py-8 lg:py-10">
+          <div className="mb-6 flex flex-wrap items-center gap-2 text-sm font-black text-[var(--text-secondary)]">
             <Link
-              href={`/${product.category.slug}`}
-              className="transition hover:text-[var(--brand-blue)] focus-ring rounded-md"
+              href="/productos"
+              className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
             >
-              {product.category.name}
+              Productos
             </Link>
-          </>
-        ) : null}
-      </div>
 
-      <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-        <ProductGallery productName={product.name} images={product.images} />
-
-        <div className="rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-sm lg:p-8">
-          <div className="flex flex-wrap gap-2">
             {product.category ? (
-              <Link
-                href={`/${product.category.slug}`}
-                className="rounded-full bg-[var(--brand-blue-soft)] px-3 py-1 text-xs font-black text-[var(--brand-blue-dark)] transition hover:bg-[var(--brand-blue)] hover:text-white focus-ring"
-              >
-                {product.category.name}
-              </Link>
+              <>
+                <span className="text-[var(--text-muted)]">/</span>
+                <Link
+                  href={`/${product.category.slug}`}
+                  className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
+                >
+                  {product.category.name}
+                </Link>
+              </>
             ) : null}
 
             {product.subcategory ? (
-              <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-xs font-black text-[var(--text-secondary)]">
-                {product.subcategory.name}
-              </span>
-            ) : null}
-
-            {product.brand ? (
-              <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-xs font-black text-[var(--text-secondary)]">
-                {product.brand.name}
-              </span>
-            ) : null}
-
-            {product.isOffer ? (
-              <span className="rounded-full bg-[var(--brand-red)] px-3 py-1 text-xs font-black text-white">
-                Oferta
-              </span>
+              <>
+                <span className="text-[var(--text-muted)]">/</span>
+                <Link
+                  href={`/${product.subcategory.slug}`}
+                  className="rounded-md transition hover:text-[var(--brand-blue)] focus-ring"
+                >
+                  {product.subcategory.name}
+                </Link>
+              </>
             ) : null}
           </div>
 
-          <h1 className="mt-5 text-3xl font-black tracking-tight text-[var(--text-primary)] lg:text-5xl">
-            {product.name}
-          </h1>
+          <div className="grid gap-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <ProductGallery
+              productName={product.name}
+              images={product.images}
+            />
 
-          <div className="mt-6 rounded-3xl bg-[var(--surface-muted)] p-5">
-            <p className="text-xs font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
-              Precio contado
-            </p>
+            <div className="relative overflow-hidden rounded-[2.25rem] border border-[#B7CADA] bg-white p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] lg:p-7">
+              <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-[rgba(2,100,169,0.08)] blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-24 left-10 h-56 w-56 rounded-full bg-[rgba(244,196,48,0.12)] blur-3xl" />
 
-            <p className="mt-2 text-4xl font-black text-[var(--brand-blue-dark)]">
-              {priceLabel}
-            </p>
+              <div className="relative">
+                <div className="flex flex-wrap gap-2">
+                  {product.category ? (
+                    <Link
+                      href={`/${product.category.slug}`}
+                      className="rounded-full bg-[var(--brand-blue-soft)] px-3 py-1 text-xs font-black text-[var(--brand-blue-dark)] transition hover:bg-[var(--brand-blue)] hover:text-white focus-ring"
+                    >
+                      {product.category.name}
+                    </Link>
+                  ) : null}
 
-            <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
-              Las cuotas, promociones, condiciones de financiación y entrega se
-              coordinan directamente por WhatsApp.
-            </p>
-          </div>
+                  {product.subcategory ? (
+                    <Link
+                      href={`/${product.subcategory.slug}`}
+                      className="rounded-full bg-white px-3 py-1 text-xs font-black text-[var(--text-secondary)] shadow-sm transition hover:text-[var(--brand-blue)] focus-ring"
+                    >
+                      {product.subcategory.name}
+                    </Link>
+                  ) : null}
 
-          {product.descriptionLong ? (
-            <div className="mt-6">
-              <h2 className="text-lg font-black text-[var(--text-primary)]">
-                Descripción
-              </h2>
+                  {product.brand ? (
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[var(--text-secondary)] shadow-sm">
+                      {product.brand.name}
+                    </span>
+                  ) : null}
 
-              <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[var(--text-secondary)]">
-                {product.descriptionLong}
-              </p>
+                  {product.isOffer ? (
+                    <span className="rounded-full bg-[var(--brand-red)] px-3 py-1 text-xs font-black text-white shadow-sm">
+                      Oferta
+                    </span>
+                  ) : null}
+
+                  {product.isFeatured ? (
+                    <span className="rounded-full bg-[var(--brand-yellow)] px-3 py-1 text-xs font-black text-[var(--brand-blue-dark)] shadow-sm">
+                      Destacado
+                    </span>
+                  ) : null}
+                </div>
+
+                <h1 className="mt-5 text-4xl font-black leading-[1.02] tracking-[-0.045em] text-[var(--text-primary)] lg:text-5xl">
+                  {product.name}
+                </h1>
+
+                <div className="mt-5 rounded-[1.75rem] border border-[#C9D6E4] bg-[linear-gradient(135deg,#F8FBFE_0%,#EEF6FC_100%)] p-4 shadow-sm">
+                  <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
+                    Precio contado publicado
+                  </p>
+
+                  <p className="mt-2 text-4xl font-black tracking-tight text-[var(--brand-blue-dark)]">
+                    {priceLabel}
+                  </p>
+
+                  <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+                    Las cuotas, promociones, condiciones de financiación,
+                    disponibilidad y entrega se coordinan con un asesor de
+                    Credifer.
+                  </p>
+                </div>
+
+                <div className="mt-5 rounded-[1.5rem] border border-[#C9D6E4] bg-white/90 p-4 shadow-sm">
+                  <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--brand-blue)]">
+                    Coordinación Credifer
+                  </p>
+
+                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                    {purchaseHighlights.map((item) => (
+                      <div
+                        key={item.label}
+                        className="flex items-center gap-2 rounded-2xl bg-[var(--catalog-surface-soft)] px-3 py-2"
+                      >
+                        <span
+                          className={`h-2.5 w-2.5 shrink-0 rounded-full ${item.accent}`}
+                        />
+
+                        <div>
+                          <p className="text-[11px] font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                            {item.label}
+                          </p>
+                          <p className="text-sm font-black text-[var(--text-primary)]">
+                            {item.value}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  <AddToCartButton product={cartProduct} />
+
+                  <a
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-12 items-center justify-center rounded-2xl bg-[var(--whatsapp)] px-6 py-3 text-sm font-black text-slate-950 shadow-[0_14px_30px_rgba(37,211,102,0.24)] transition hover:-translate-y-0.5 hover:bg-[var(--whatsapp-dark)] hover:text-white focus-ring"
+                  >
+                    Consultar por WhatsApp
+                  </a>
+
+                  <Link
+                    href="/productos"
+                    className="inline-flex min-h-12 items-center justify-center rounded-2xl border border-[#B7CADA] bg-white px-6 py-3 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring sm:col-span-2"
+                  >
+                    Seguir viendo productos
+                  </Link>
+                </div>
+
+                <div className="mt-7">
+                  <h2 className="text-lg font-black text-[var(--text-primary)]">
+                    Descripción
+                  </h2>
+
+                  <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[var(--text-secondary)]">
+                    {productDescription}
+                  </p>
+                </div>
+              </div>
             </div>
-          ) : null}
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            <AddToCartButton product={cartProduct} />
-
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex justify-center rounded-full bg-[var(--whatsapp)] px-6 py-3 text-sm font-black text-white transition hover:bg-[var(--whatsapp-dark)] focus-ring"
-            >
-              Consultar por WhatsApp
-            </a>
-
-            <Link
-              href="/productos"
-              className="inline-flex justify-center rounded-full border border-[var(--border-strong)] bg-white px-6 py-3 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring sm:col-span-2"
-            >
-              Seguir viendo productos
-            </Link>
           </div>
+
+          <RelatedProductsCarousel products={serializedRelatedProducts} />
         </div>
       </div>
     </section>

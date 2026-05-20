@@ -35,6 +35,15 @@ export function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images[0] ?? null;
   const priceLabel = formatCurrency(product.price);
 
+  const categoryLabel =
+    product.subcategory?.name ?? product.category?.name ?? "Producto";
+
+  const categoryHref = product.subcategory
+    ? `/${product.subcategory.slug}`
+    : product.category
+      ? `/${product.category.slug}`
+      : "/productos";
+
   const cartProduct = {
     id: product.id,
     name: product.name,
@@ -42,17 +51,17 @@ export function ProductCard({ product }: ProductCardProps) {
     price: product.price,
     imageUrl: primaryImage?.url ?? null,
     brandName: product.brand?.name ?? null,
-    categoryName: product.category?.name ?? null,
+    categoryName: product.subcategory?.name ?? product.category?.name ?? null,
   };
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-[1.65rem] border border-[var(--catalog-border)] bg-[var(--catalog-surface)] shadow-[0_8px_22px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[var(--brand-blue)] hover:shadow-[var(--catalog-shadow)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-[1.65rem] border border-[var(--catalog-border)] bg-white shadow-[0_10px_26px_rgba(15,23,42,0.07)] transition duration-200 hover:-translate-y-1 hover:border-[var(--brand-blue)] hover:shadow-[var(--catalog-shadow)]">
       <Link
         href={`/producto/${product.slug}`}
         className="block focus-ring"
         aria-label={`Ver producto ${product.name}`}
       >
-        <div className="relative aspect-square overflow-hidden border-b border-[var(--catalog-border)] bg-[#FCFEFF]">
+        <div className="relative h-[220px] overflow-hidden border-b border-[var(--catalog-border)] bg-[linear-gradient(135deg,#F8FBFE_0%,#EEF6FC_100%)]">
           {primaryImage ? (
             <img
               src={primaryImage.url}
@@ -60,9 +69,22 @@ export function ProductCard({ product }: ProductCardProps) {
               className="h-full w-full object-contain p-5 transition duration-300 group-hover:scale-[1.035]"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--brand-blue-soft)] via-white to-white p-6">
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-4xl font-black text-[var(--brand-blue)] shadow-sm">
-                {product.name.charAt(0).toUpperCase()}
+            <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-6">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-[rgba(2,100,169,0.10)] blur-2xl" />
+              <div className="pointer-events-none absolute -bottom-12 left-6 h-36 w-36 rounded-full bg-[rgba(244,196,48,0.14)] blur-2xl" />
+
+              <div className="relative flex h-full w-full flex-col items-center justify-center rounded-[1.25rem] border border-[#D6E3EF] bg-white/70 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--brand-blue-soft)] text-2xl font-black text-[var(--brand-blue)] shadow-sm">
+                  {product.name.charAt(0).toUpperCase()}
+                </div>
+
+                <p className="mt-4 text-xs font-black uppercase tracking-[0.16em] text-[var(--brand-blue)]">
+                  Imagen a confirmar
+                </p>
+
+                <p className="mt-1 max-w-[150px] text-xs font-bold leading-5 text-[var(--text-muted)]">
+                  Producto disponible para consultar.
+                </p>
               </div>
             </div>
           )}
@@ -83,19 +105,17 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </Link>
 
-      <div className="flex flex-1 flex-col bg-[#F6F9FC] p-4">
+      <div className="flex flex-1 flex-col bg-[#F8FBFE] p-4">
         <div className="mb-3 flex min-h-7 flex-wrap gap-2">
-          {product.category ? (
-            <Link
-              href={`/${product.category.slug}`}
-              className="rounded-full bg-[var(--brand-blue-soft)] px-3 py-1 text-[11px] font-black text-[var(--brand-blue-dark)] transition hover:bg-[var(--brand-blue)] hover:text-white focus-ring"
-            >
-              {product.category.name}
-            </Link>
-          ) : null}
+          <Link
+            href={categoryHref}
+            className="rounded-full bg-[var(--brand-blue-soft)] px-3 py-1 text-[11px] font-black text-[var(--brand-blue-dark)] transition hover:bg-[var(--brand-blue)] hover:text-white focus-ring"
+          >
+            {categoryLabel}
+          </Link>
 
           {product.brand ? (
-            <span className="rounded-full bg-[var(--surface-muted)] px-3 py-1 text-[11px] font-black text-[var(--text-secondary)]">
+            <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black text-[var(--text-secondary)] shadow-sm">
               {product.brand.name}
             </span>
           ) : null}
@@ -116,13 +136,13 @@ export function ProductCard({ product }: ProductCardProps) {
           </p>
         ) : (
           <p className="mt-2 min-h-11 text-sm leading-6 text-[var(--text-secondary)]">
-            Producto disponible para consultar por WhatsApp.
+            Producto disponible para consultar precio, cuotas y disponibilidad.
           </p>
         )}
 
         <div className="mt-auto pt-4">
-          <div className="rounded-2xl border border-[var(--catalog-border)] bg-white px-4 py-3">
-            <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)]">
+          <div className="rounded-2xl border border-[#C9D6E4] bg-white px-4 py-3 shadow-sm">
+            <p className="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)]">
               Precio contado
             </p>
 
@@ -136,7 +156,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
             <Link
               href={`/producto/${product.slug}`}
-              className="inline-flex w-full justify-center rounded-full border border-[var(--catalog-border-strong)] bg-white px-4 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue-dark)] focus-ring"
+              className="inline-flex min-h-11 items-center justify-center rounded-2xl border border-[#B7CADA] bg-white px-4 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
             >
               Ver detalle
             </Link>
