@@ -1,3 +1,4 @@
+//src/app/admin/(protected)/productos/[id]/editar/actions.ts
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -164,6 +165,13 @@ export async function updateProduct(
   formData: FormData,
 ): Promise<ProductEditFormState> {
   await requireAdmin();
+
+  const returnToValue = formData.get("returnTo");
+  const returnTo =
+    typeof returnToValue === "string" &&
+    returnToValue.startsWith("/admin/productos")
+      ? returnToValue
+      : "/admin/productos";
 
   const productId = Number(formData.get("productId"));
 
@@ -335,5 +343,5 @@ export async function updateProduct(
     revalidatePath(`/${currentProduct.category.slug}`);
   }
 
-  redirect("/admin/productos");
+  redirect(returnTo);
 }

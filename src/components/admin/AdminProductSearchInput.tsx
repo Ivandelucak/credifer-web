@@ -1,3 +1,4 @@
+//src/components/admin/AdminProductSearchInput.tsx
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -142,17 +143,25 @@ export function AdminProductSearchInput({
     };
   }, [query]);
 
-  function handleSuggestionClick(suggestion: ProductSuggestion) {
+  function goToSearch(nextQuery = query) {
+    const cleanQuery = nextQuery.trim();
+
     const nextUrl = buildAdminProductsUrl({
-      q: suggestion.name,
+      q: cleanQuery,
       categoria: selectedCategory,
       estado: selectedStatus,
       orden: selectedOrder,
     });
 
-    setQuery(suggestion.name);
+    setQuery(cleanQuery);
     setIsOpen(false);
     router.push(nextUrl);
+  }
+
+  function handleSuggestionClick(suggestion: ProductSuggestion) {
+    const cleanQuery = query.trim() || suggestion.name;
+
+    goToSearch(cleanQuery);
   }
 
   return (
@@ -162,6 +171,12 @@ export function AdminProductSearchInput({
         name="q"
         value={query}
         onChange={(event) => setQuery(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            goToSearch();
+          }
+        }}
         onFocus={() => {
           if (suggestions.length > 0 && query.trim().length >= 3) {
             setIsOpen(true);

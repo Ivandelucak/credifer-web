@@ -1,13 +1,19 @@
+//src/app/admin/(protected)/productos/[id]/editar/page.tsx
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductEditForm } from "@/components/admin/ProductEditForm";
 import { ProductImagesManager } from "@/components/admin/ProductImagesManager";
 import { prisma } from "@/lib/prisma";
 import { ProductSoftDeleteButton } from "@/components/admin/ProductSoftDeleteButton";
+import { formatCurrency } from "@/lib/formatters";
+import { BackButton } from "@/components/layout/BackButton";
 
 type EditProductPageProps = {
   params: Promise<{
     id: string;
+  }>;
+  searchParams: Promise<{
+    returnTo?: string;
   }>;
 };
 
@@ -15,8 +21,16 @@ export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({
   params,
+  searchParams,
 }: EditProductPageProps) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+
+  const productsReturnHref = resolvedSearchParams.returnTo?.startsWith(
+    "/admin/productos",
+  )
+    ? resolvedSearchParams.returnTo
+    : "/admin/productos";
   const productId = Number(id);
 
   if (!productId || Number.isNaN(productId)) {
@@ -108,63 +122,106 @@ export default async function EditProductPage({
     metaTitle: product.metaTitle,
     metaDescription: product.metaDescription,
   };
+  const priceLabel = formatCurrency(
+    product.price ? product.price.toString() : null,
+  );
+
+  const productStatusLabel = product.isActive ? "Activo" : "Oculto";
+  const productStatusClassName = product.isActive
+    ? "border-green-200 bg-green-50 text-green-700"
+    : "border-red-200 bg-red-50 text-red-700";
+
+  const imagesCount = product.images.length;
 
   return (
-    <div>
-      <div className="rounded-[2rem] border border-[var(--border)] bg-white p-6 shadow-sm lg:p-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-7">
+      <div>
+        <BackButton
+          fallbackHref={productsReturnHref}
+          label="Volver a productos"
+        />
+      </div>
+      <section className="relative overflow-hidden rounded-[2.25rem] border border-[#B7CADA] bg-[linear-gradient(135deg,#EAF4FB_0%,#F8FBFF_48%,#FFF7D8_100%)] p-6 shadow-[0_18px_42px_rgba(15,23,42,0.08)] lg:p-8">
+        <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(2,100,169,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(2,100,169,0.14)_1px,transparent_1px)] [background-size:44px_44px]" />
+
+        <div className="relative z-10 flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--brand-blue)]">
-              Editar producto
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#B7CADA] bg-white/86 px-4 py-2 shadow-sm backdrop-blur">
+              <span className="h-2.5 w-2.5 rounded-full bg-[var(--brand-blue)]" />
+              <span className="text-xs font-black uppercase tracking-[0.18em] text-[var(--brand-blue-dark)]">
+                Editar producto
+              </span>
+            </div>
 
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-[var(--text-primary)]">
+            <h1 className="mt-5 max-w-4xl text-4xl font-black leading-tight tracking-[-0.04em] text-[var(--text-primary)] lg:text-5xl">
               {product.name}
-            </h2>
+            </h1>
 
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-secondary)]">
-              Modificá la información comercial del producto. Los cambios se
-              reflejan en la tienda pública.
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-[var(--text-secondary)] lg:text-base lg:leading-7">
+              Actualizá la información principal del producto, sus imágenes,
+              precio, organización y estado dentro de la tienda.
             </p>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span
+                className={`rounded-full border px-3 py-1.5 text-xs font-black ${productStatusClassName}`}
+              >
+                {productStatusLabel}
+              </span>
+
+              {product.isFeatured ? (
+                <span className="rounded-full border border-[#F4C430]/70 bg-[#FFF3B8] px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)]">
+                  Destacado
+                </span>
+              ) : null}
+
+              {product.isOffer ? (
+                <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-black text-[var(--brand-red)]">
+                  Oferta
+                </span>
+              ) : null}
+
+              <span className="rounded-full border border-[#B7CADA] bg-white/86 px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)]">
+                {priceLabel}
+              </span>
+
+              <span className="rounded-full border border-[#B7CADA] bg-white/86 px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)]">
+                {imagesCount} imagen{imagesCount === 1 ? "" : "es"}
+              </span>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/admin/productos"
-              className="inline-flex justify-center rounded-full border border-[var(--border-strong)] bg-white px-5 py-3 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
-            >
-              Volver
-            </Link>
-
+          <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
             <Link
               href={`/producto/${product.slug}`}
               target="_blank"
-              className="inline-flex justify-center rounded-full bg-[var(--brand-blue)] px-5 py-3 text-sm font-black text-white transition hover:bg-[var(--brand-blue-dark)] focus-ring"
+              className="tap-feedback inline-flex min-h-12 min-w-[145px] items-center justify-center whitespace-nowrap rounded-2xl bg-[var(--brand-blue)] px-5 py-3 text-center text-sm font-black text-white shadow-[0_14px_28px_rgba(2,100,169,0.22)] transition hover:-translate-y-0.5 hover:bg-[var(--brand-blue-dark)] focus-ring"
             >
-              Ver público
+              Ver en tienda
             </Link>
+
             <ProductSoftDeleteButton
               productId={product.id}
-              returnTo="/admin/productos"
-              label="Eliminar producto"
-              className="inline-flex justify-center rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 transition hover:border-red-300 focus-ring"
+              returnTo={productsReturnHref}
+              productName={product.name}
+              label="Eliminar"
+              className="tap-feedback inline-flex min-h-12 min-w-[130px] items-center justify-center whitespace-nowrap rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-center text-sm font-black text-red-700 shadow-sm transition hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-100 focus-ring"
             />
           </div>
         </div>
-      </div>
+      </section>
 
-      <div className="mt-6">
-        <ProductImagesManager
-          productId={product.id}
-          productName={product.name}
-          images={product.images}
-        />
-      </div>
+      <ProductImagesManager
+        productId={product.id}
+        productName={product.name}
+        images={product.images}
+      />
 
       <ProductEditForm
         product={serializedProduct}
         categories={categories}
         brands={brands}
+        returnHref={productsReturnHref}
       />
     </div>
   );

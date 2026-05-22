@@ -172,7 +172,16 @@ export function Footer() {
 
         <div className="mt-10 border-t border-white/10 pt-5">
           <div className="flex flex-col gap-3 text-xs text-white/58 sm:flex-row sm:items-center sm:justify-between">
-            <p>© {currentYear} Credifer. Todos los derechos reservados.</p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+              <p>© {currentYear} Credifer. Todos los derechos reservados.</p>
+
+              <Link
+                href="/admin"
+                className="rounded-md font-black text-white/54 transition hover:text-[var(--brand-yellow)] focus-ring"
+              >
+                Acceso interno
+              </Link>
+            </div>
 
             <p>
               Los precios publicados corresponden a precio contado. Las opciones

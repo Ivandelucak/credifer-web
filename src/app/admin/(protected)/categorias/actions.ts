@@ -1,3 +1,4 @@
+//src/app/admin/(protected)/categorias/actions.ts
 "use server";
 
 import { revalidatePath } from "next/cache";

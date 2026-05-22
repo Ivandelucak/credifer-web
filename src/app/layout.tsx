@@ -1,3 +1,4 @@
+//src/app/layout.tsx
 import type { Metadata } from "next";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
@@ -7,6 +8,7 @@ import { WhatsAppFloatingButton } from "@/components/layout/WhatsAppFloatingButt
 import { CartProvider } from "@/components/cart/CartProvider";
 import { Suspense } from "react";
 import { NavigationMemory } from "@/components/layout/NavigationMemory";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: {
@@ -40,11 +42,9 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <NavigationMemory />
         </Suspense>
+
         <CartProvider>
-          <Header />
-          <main>{children}</main>
-          <Footer />
-          <WhatsAppFloatingButton />
+          <AppShell>{children}</AppShell>
         </CartProvider>
       </body>
     </html>

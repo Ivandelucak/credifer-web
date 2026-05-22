@@ -1,3 +1,4 @@
+//src/app/admin/(protected)/productos/nuevo/actions.ts
 "use server";
 
 import { redirect } from "next/navigation";

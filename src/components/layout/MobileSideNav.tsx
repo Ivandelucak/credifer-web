@@ -237,6 +237,16 @@ export function MobileSideNav() {
               </a>
             </div>
           </div>
+          <div className="mt-4 rounded-[1.5rem] border border-[#C9D6E4] bg-white/80 p-3 shadow-sm">
+            <Link
+              href="/admin"
+              onClick={closeMenu}
+              className="tap-feedback flex min-h-11 items-center justify-between rounded-2xl px-3 py-2 text-sm font-black text-[var(--text-secondary)] transition hover:bg-[var(--brand-blue-soft)] hover:text-[var(--brand-blue-dark)] focus-ring"
+            >
+              <span>Acceso interno</span>
+              <span aria-hidden="true">›</span>
+            </Link>
+          </div>
         </div>
       </aside>
     </div>
