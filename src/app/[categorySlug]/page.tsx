@@ -262,10 +262,12 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     },
   });
 
-  const serializedProducts = products.map((product) => ({
-    ...product,
-    price: product.price ? product.price.toString() : null,
-  }));
+  const serializedProducts = products.map(
+    (product: (typeof products)[number]) => ({
+      ...product,
+      price: product.price ? product.price.toString() : null,
+    }),
+  );
 
   const sectionDescription =
     section.description ??
