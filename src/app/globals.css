@@ -46,11 +46,17 @@
 }
 
 html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   scroll-behavior: smooth;
 }
 
 body {
-  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100dvh;
+  overflow-x: hidden;
   margin: 0;
   background:
     radial-gradient(
@@ -97,6 +103,26 @@ img {
 .container-page {
   width: min(1180px, calc(100% - 2rem));
   margin-inline: auto;
+}
+
+@media (max-width: 480px) {
+  .container-page {
+    width: min(1180px, calc(100% - 1.25rem));
+  }
+}
+
+@supports (padding: max(0px)) {
+  @media (max-width: 480px) {
+    .container-page {
+      width: min(
+        1180px,
+        calc(
+          100% - max(0.75rem, env(safe-area-inset-left)) -
+            max(0.75rem, env(safe-area-inset-right))
+        )
+      );
+    }
+  }
 }
 
 .focus-ring {

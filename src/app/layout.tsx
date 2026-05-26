@@ -1,5 +1,5 @@
 //src/app/layout.tsx
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { siteConfig } from "@/lib/site";
 import { Header } from "@/components/layout/Header";
@@ -29,6 +29,12 @@ export const metadata: Metadata = {
     icon: "/brand/logo-square.png",
     apple: "/brand/icon-512.png",
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

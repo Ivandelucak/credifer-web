@@ -1,8 +1,14 @@
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+  (process.env.NODE_ENV === "production"
+    ? "https://tienda.credifer.com.ar"
+    : "http://localhost:3000");
+
 export const siteConfig = {
   name: "Credifer",
+  url: siteUrl,
   description:
-    "Catálogo online de Credifer. Elegí productos, armá tu carrito y consultá opciones de compra por WhatsApp.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+    "Catálogo online de Credifer. Consultá productos, cuotas, financiación, disponibilidad y entrega.",
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER ?? "5492216920251",
   whatsappMessage:
     "Hola Credifer, quiero consultar por productos de la tienda online.",

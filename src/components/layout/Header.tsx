@@ -1,3 +1,4 @@
+//src/components/layout/Header.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { CartHeaderLink } from "@/components/cart/CartHeaderLink";
@@ -15,13 +16,13 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-[#C9D6E4] bg-[#F4F8FC]/95 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl">
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[3px] bg-[linear-gradient(90deg,#0264A9_0%,#F4C430_34%,#D82128_66%,#25D366_100%)]" />
 
-      <div className="container-page flex min-h-[82px] items-center justify-between gap-4">
+      <div className="container-page flex min-h-[74px] items-center justify-between gap-2 py-2 sm:min-h-[82px] sm:gap-4 sm:py-0">
         <Link
           href="/"
           className="flex items-center gap-3 rounded-2xl focus-ring"
           aria-label="Ir al inicio de Credifer"
         >
-          <div className="relative h-14 w-36 sm:w-44">
+          <div className="relative h-12 w-32 sm:h-14 sm:w-44">
             <Image
               src="/brand/logo-credifer.png"
               alt="Credifer"
