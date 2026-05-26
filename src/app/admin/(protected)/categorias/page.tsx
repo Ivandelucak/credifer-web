@@ -10,6 +10,7 @@ import {
 } from "@/app/admin/(protected)/categorias/actions";
 import { prisma } from "@/lib/prisma";
 import { AdminCategoryJumpSearch } from "@/components/admin/AdminCategoryJumpSearch";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -20,12 +21,43 @@ type AdminCategoriesPageProps = {
   }>;
 };
 
+type AdminCategory = Prisma.CategoryGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    slug: true;
+    description: true;
+    position: true;
+    isActive: true;
+    _count: {
+      select: {
+        products: true;
+      };
+    };
+    subcategories: {
+      select: {
+        id: true;
+        name: true;
+        slug: true;
+        description: true;
+        position: true;
+        isActive: true;
+        _count: {
+          select: {
+            products: true;
+          };
+        };
+      };
+    };
+  };
+}>;
+
 export default async function AdminCategoriesPage({
   searchParams,
 }: AdminCategoriesPageProps) {
   const params = await searchParams;
 
-  const categories = await prisma.category.findMany({
+  const categories = (await prisma.category.findMany({
     orderBy: [{ position: "asc" }, { name: "asc" }],
     select: {
       id: true,
@@ -65,7 +97,7 @@ export default async function AdminCategoriesPage({
         },
       },
     },
-  });
+  })) as AdminCategory[];
 
   const activeCategories = categories.filter((category) => category.isActive);
   const inactiveCategories = categories.filter(

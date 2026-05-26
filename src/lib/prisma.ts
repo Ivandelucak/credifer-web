@@ -15,7 +15,7 @@ const adapter = new PrismaMariaDb({
   allowPublicKeyRetrieval: true,
 });
 
-export const prisma =
+export const prisma: PrismaClient =
   globalForPrisma.prisma ??
   new PrismaClient({
     adapter,
