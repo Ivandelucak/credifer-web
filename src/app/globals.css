@@ -233,3 +233,71 @@ img {
     animation: none;
   }
 }
+
+.admin-shell {
+  --admin-border: #8fa2b8;
+  --admin-border-soft: #a9b8c9;
+  --admin-card-shadow: 0 16px 38px rgba(15, 23, 42, 0.12);
+}
+
+.admin-shell [class*="border-[#C9D6E4]"],
+.admin-shell [class*="border-[#B7CADA]"],
+.admin-shell [class*="border-[#D6E3EF]"],
+.admin-shell [class*="border-[var(--catalog-border)]"],
+.admin-shell [class*="border-[var(--border)]"] {
+  border-color: var(--admin-border) !important;
+}
+
+.admin-shell input,
+.admin-shell textarea,
+.admin-shell select {
+  border: 1.5px solid var(--admin-border) !important;
+  background-color: #ffffff !important;
+}
+
+.admin-shell input:focus,
+.admin-shell textarea:focus,
+.admin-shell select:focus {
+  border-color: var(--brand-blue) !important;
+  box-shadow: 0 0 0 3px rgba(2, 100, 169, 0.16) !important;
+}
+
+.admin-shell table,
+.admin-shell thead,
+.admin-shell tbody,
+.admin-shell tr,
+.admin-shell td,
+.admin-shell th {
+  border-color: var(--admin-border-soft) !important;
+}
+
+.admin-shell [class*="shadow-[0_14px_34px"],
+.admin-shell [class*="shadow-[0_18px_42px"],
+.admin-shell [class*="shadow-[0_12px_30px"],
+.admin-shell [class*="shadow-[0_10px_24px"] {
+  box-shadow: var(--admin-card-shadow) !important;
+  .admin-shell table thead {
+    background: #e2eaf3 !important;
+  }
+
+  .admin-shell table thead th {
+    color: #41556c !important;
+    border-bottom: 1.5px solid #8fa2b8 !important;
+  }
+
+  .admin-shell table tbody tr {
+    background: #ffffff;
+  }
+
+  .admin-shell table tbody tr:nth-child(even) {
+    background: #f8fbfe;
+  }
+
+  .admin-shell table tbody tr:not(:last-child) {
+    border-bottom: 1.5px solid #a9b8c9 !important;
+  }
+
+  .admin-shell table tbody tr:hover {
+    background: #eef6fc;
+  }
+}

@@ -10,7 +10,9 @@
     "import:products": "tsx scripts/import-products.ts",
     "postinstall": "prisma generate",
     "catalog:reset-import": "tsx scripts/reset-import-products.ts",
-    "catalog:reset-import:apply": "tsx scripts/reset-import-products.ts --apply"
+    "catalog:reset-import:apply": "tsx scripts/reset-import-products.ts --apply",
+    "catalog:cleanup-taxonomy": "tsx scripts/cleanup-catalog-taxonomy.ts",
+    "catalog:cleanup-taxonomy:apply": "tsx scripts/cleanup-catalog-taxonomy.ts --apply"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.8.0",

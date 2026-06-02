@@ -175,7 +175,7 @@ export default async function AdminBrandsPage({
 
       <BrandCreateForm />
 
-      <section className="mt-6 rounded-[2rem] border border-[var(--border)] bg-white p-4 shadow-sm lg:p-6">
+      <section className="mt-6 rounded-[2rem] border border-[#8FA2B8] bg-[#F8FBFE] p-4 shadow-[0_16px_38px_rgba(15,23,42,0.10)] lg:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h3 className="text-xl font-black text-[var(--text-primary)]">
@@ -224,8 +224,8 @@ export default async function AdminBrandsPage({
           </div>
         ) : null}
 
-        <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[var(--border)]">
-          <div className="hidden grid-cols-[1fr_1fr_160px_220px] gap-4 border-b border-[var(--border)] bg-[var(--surface-muted)] px-5 py-4 text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)] lg:grid">
+        <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-[#8FA2B8] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+          <div className="hidden grid-cols-[1fr_1fr_150px_140px] gap-4 border-b border-[#8FA2B8] bg-[#E2EAF3] px-5 py-4 text-xs font-black uppercase tracking-[0.14em] text-[#41556C] lg:grid">
             <div>Marca</div>
             <div>Slug</div>
             <div>Productos</div>
@@ -233,55 +233,70 @@ export default async function AdminBrandsPage({
           </div>
 
           {brands.length > 0 ? (
-            <div className="divide-y divide-[var(--border)]">
-              {brands.map((brand) => (
+            <div className="divide-y divide-[#A9B8C9]">
+              {brands.map((brand, index) => (
                 <article
                   key={brand.id}
-                  className="grid gap-4 px-5 py-5 lg:grid-cols-[1fr_1fr_160px_220px] lg:items-center"
+                  className={`px-4 py-4 transition hover:bg-[#EEF6FC] lg:px-5 ${
+                    index % 2 === 0 ? "bg-white" : "bg-[#FBFDFF]"
+                  }`}
                 >
-                  <div>
-                    <p className="lg:hidden text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                      Marca
-                    </p>
+                  <div className="grid gap-4 lg:grid-cols-[1fr_1fr_150px_140px] lg:items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#B7CADA] bg-[#EAF4FB] text-sm font-black text-[var(--brand-blue)] shadow-sm">
+                        {brand.name.charAt(0).toUpperCase()}
+                      </div>
 
-                    <p className="mt-1 text-base font-black text-[var(--text-primary)]">
-                      {brand.name}
-                    </p>
-                  </div>
+                      <div>
+                        <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)] lg:hidden">
+                          Marca
+                        </p>
 
-                  <div>
-                    <p className="lg:hidden text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                      Slug
-                    </p>
+                        <p className="text-base font-black text-[#0B3558]">
+                          {brand.name}
+                        </p>
+                      </div>
+                    </div>
 
-                    <p className="mt-1 text-sm font-bold text-[var(--text-secondary)]">
-                      {brand.slug}
-                    </p>
-                  </div>
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)] lg:hidden">
+                        Slug
+                      </p>
 
-                  <div>
-                    <p className="lg:hidden text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                      Productos
-                    </p>
+                      <p className="mt-1 w-fit rounded-full border border-[#D6E3EF] bg-[#F8FBFE] px-3 py-1 text-xs font-black text-[var(--text-secondary)] lg:mt-0">
+                        /{brand.slug}
+                      </p>
+                    </div>
 
-                    <Link
-                      href={`/admin/productos?q=${encodeURIComponent(
-                        brand.name,
-                      )}`}
-                      className="mt-1 inline-flex rounded-full bg-[var(--brand-blue-soft)] px-3 py-1 text-xs font-black text-[var(--brand-blue-dark)] transition hover:bg-[var(--brand-blue)] hover:text-white focus-ring"
-                    >
-                      {brand._count.products} productos
-                    </Link>
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-[0.14em] text-[var(--text-muted)] lg:hidden">
+                        Productos
+                      </p>
+
+                      <Link
+                        href={`/admin/productos?q=${encodeURIComponent(brand.name)}`}
+                        className="mt-1 inline-flex rounded-full border border-[#B7CADA] bg-[#DFF1FA] px-3 py-1 text-xs font-black text-[#0B3558] transition hover:bg-[var(--brand-blue)] hover:text-white focus-ring lg:mt-0"
+                      >
+                        {brand._count.products} producto
+                        {brand._count.products === 1 ? "" : "s"}
+                      </Link>
+                    </div>
+
+                    <div className="hidden justify-end lg:flex">
+                      <span className="rounded-full border border-[#D6E3EF] bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                        Edición
+                      </span>
+                    </div>
                   </div>
 
                   <form
                     action={updateBrand}
-                    className="grid gap-3 lg:col-span-4 lg:grid-cols-[1fr_1fr_auto]"
+                    className="mt-4 grid gap-3 rounded-[1.35rem] border border-[#A9B8C9] bg-[#F4F8FC] p-3 lg:grid-cols-[1fr_1fr_auto] lg:items-end"
                   >
                     <input type="hidden" name="brandId" value={brand.id} />
 
                     <div>
-                      <label className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                      <label className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[#596D84]">
                         Nombre
                       </label>
 
@@ -290,12 +305,12 @@ export default async function AdminBrandsPage({
                         type="text"
                         required
                         defaultValue={brand.name}
-                        className="h-11 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+                        className="h-11 w-full rounded-2xl border border-[#8FA2B8] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
                       />
                     </div>
 
                     <div>
-                      <label className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                      <label className="mb-2 block text-xs font-black uppercase tracking-[0.12em] text-[#596D84]">
                         Slug
                       </label>
 
@@ -303,24 +318,22 @@ export default async function AdminBrandsPage({
                         name="slug"
                         type="text"
                         defaultValue={brand.slug}
-                        className="h-11 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+                        className="h-11 w-full rounded-2xl border border-[#8FA2B8] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
                       />
                     </div>
 
-                    <div className="flex items-end">
-                      <button
-                        type="submit"
-                        className="h-11 w-full rounded-2xl border border-[var(--border)] bg-white px-5 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring lg:w-auto"
-                      >
-                        Guardar
-                      </button>
-                    </div>
+                    <button
+                      type="submit"
+                      className="tap-feedback inline-flex h-11 w-full items-center justify-center rounded-2xl bg-[var(--brand-blue)] px-5 text-sm font-black text-white shadow-[0_10px_22px_rgba(2,100,169,0.18)] transition hover:-translate-y-0.5 hover:bg-[var(--brand-blue-dark)] focus-ring lg:w-auto"
+                    >
+                      Guardar
+                    </button>
                   </form>
                 </article>
               ))}
             </div>
           ) : (
-            <div className="p-8 text-center">
+            <div className="bg-white p-8 text-center">
               <h3 className="text-2xl font-black text-[var(--text-primary)]">
                 No encontramos marcas
               </h3>
@@ -328,6 +341,15 @@ export default async function AdminBrandsPage({
               <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
                 Probá con otra búsqueda o creá una marca nueva.
               </p>
+
+              {query ? (
+                <Link
+                  href={buildBrandsUrl({})}
+                  className="tap-feedback mt-5 inline-flex min-h-11 items-center justify-center rounded-2xl bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-black text-white transition hover:bg-[var(--brand-blue-dark)] focus-ring"
+                >
+                  Limpiar búsqueda
+                </Link>
+              ) : null}
             </div>
           )}
         </div>

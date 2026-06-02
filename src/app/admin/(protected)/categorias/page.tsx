@@ -680,10 +680,7 @@ export default async function AdminCategoriesPage({
                           </form>
                         </div>
 
-                        <form
-                          action={updateSubcategory}
-                          className="grid gap-3 md:grid-cols-[1fr_1fr_90px_auto]"
-                        >
+                        <form action={updateSubcategory} className="space-y-3">
                           <input
                             type="hidden"
                             name="subcategoryId"
@@ -695,53 +692,81 @@ export default async function AdminCategoriesPage({
                             value={category.id}
                           />
 
-                          <input
-                            name="name"
-                            type="text"
-                            required
-                            defaultValue={subcategory.name}
-                            className="h-11 rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
-                          />
+                          <div className="grid gap-3 md:grid-cols-[1fr_1fr_96px]">
+                            <div>
+                              <label className="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                                Nombre
+                              </label>
 
-                          <input
-                            name="slug"
-                            type="text"
-                            defaultValue={subcategory.slug}
-                            className="h-11 rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
-                          />
+                              <input
+                                name="name"
+                                type="text"
+                                required
+                                defaultValue={subcategory.name}
+                                className="h-11 w-full rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+                              />
+                            </div>
 
-                          <input
-                            name="position"
-                            type="number"
-                            defaultValue={subcategory.position}
-                            className="h-11 rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
-                          />
+                            <div>
+                              <label className="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                                Slug
+                              </label>
 
-                          <button
-                            type="submit"
-                            className="tap-feedback rounded-2xl border border-[#B7CADA] bg-white px-4 py-2 text-xs font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
-                          >
-                            Guardar
-                          </button>
+                              <input
+                                name="slug"
+                                type="text"
+                                defaultValue={subcategory.slug}
+                                className="h-11 w-full rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+                              />
+                            </div>
 
-                          <textarea
-                            name="description"
-                            rows={2}
-                            defaultValue={subcategory.description ?? ""}
-                            className="rounded-2xl border border-[#C9D6E4] bg-white px-4 py-3 text-sm font-medium leading-6 text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)] md:col-span-4"
-                          />
+                            <div>
+                              <label className="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                                Orden
+                              </label>
 
-                          <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[#C9D6E4] bg-[var(--catalog-surface-soft)] px-4 py-2 transition hover:border-[var(--brand-blue)] md:col-span-4">
-                            <input
-                              type="checkbox"
-                              name="isActive"
-                              defaultChecked={subcategory.isActive}
-                              className="h-4 w-4"
+                              <input
+                                name="position"
+                                type="number"
+                                defaultValue={subcategory.position}
+                                className="h-11 w-full rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="mb-1.5 block text-xs font-black uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                              Descripción
+                            </label>
+
+                            <textarea
+                              name="description"
+                              rows={2}
+                              defaultValue={subcategory.description ?? ""}
+                              className="w-full rounded-2xl border border-[#C9D6E4] bg-white px-4 py-3 text-sm font-medium leading-6 text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
                             />
-                            <span className="text-xs font-black text-[var(--text-primary)]">
-                              Subcategoría activa
-                            </span>
-                          </label>
+                          </div>
+
+                          <div className="flex flex-col gap-3 rounded-2xl border border-[#C9D6E4] bg-[var(--catalog-surface-soft)] p-3 sm:flex-row sm:items-center sm:justify-between">
+                            <label className="flex cursor-pointer items-center gap-2 rounded-xl px-1 py-1 transition">
+                              <input
+                                type="checkbox"
+                                name="isActive"
+                                defaultChecked={subcategory.isActive}
+                                className="h-4 w-4"
+                              />
+                              <span className="text-xs font-black text-[var(--text-primary)]">
+                                Subcategoría activa
+                              </span>
+                            </label>
+
+                            <button
+                              type="submit"
+                              className="tap-feedback inline-flex min-h-11 items-center justify-center rounded-2xl bg-[var(--brand-blue)] px-5 py-2.5 text-xs font-black text-white shadow-[0_10px_22px_rgba(2,100,169,0.18)] transition hover:-translate-y-0.5 hover:bg-[var(--brand-blue-dark)] focus-ring sm:w-auto"
+                            >
+                              Guardar cambios
+                            </button>
+                          </div>
                         </form>
                       </div>
                     ))}

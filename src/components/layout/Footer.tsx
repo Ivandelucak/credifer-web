@@ -19,8 +19,8 @@ const footerLinks = [
       { label: "Audio", href: "/audio" },
       { label: "Herramientas", href: "/herramientas" },
       {
-        label: "Grandes electrodomésticos",
-        href: "/grandes-electrodomesticos",
+        label: "Electrodomésticos",
+        href: "/electrodomesticos",
       },
     ],
   },
@@ -30,6 +30,8 @@ const footerLinks = [
       { label: "Cómo comprar", href: "/como-comprar" },
       { label: "Financiación y pagos", href: "/como-comprar" },
       { label: "Contacto", href: "/contacto" },
+      { label: "Información legal", href: "/legal" },
+      { label: "Revocación / arrepentimiento", href: "/legal#arrepentimiento" },
     ],
   },
 ];
@@ -50,6 +52,7 @@ export function Footer() {
   )}`;
 
   const instagramUrl = "https://www.instagram.com/cell.sur/";
+  const developerUrl = "https://github.com/Ivandelucak";
 
   return (
     <footer className="border-t border-[#0B3558]/20 bg-[linear-gradient(135deg,#0B3558_0%,#0E4B68_58%,#0D5A5E_100%)] text-white">
@@ -171,9 +174,23 @@ export function Footer() {
         </div>
 
         <div className="mt-10 border-t border-white/10 pt-5">
-          <div className="flex flex-col gap-3 text-xs text-white/58 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 text-xs text-white/58 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               <p>© {currentYear} Credifer. Todos los derechos reservados.</p>
+
+              <Link
+                href="/legal"
+                className="rounded-md font-black text-white/54 transition hover:text-[var(--brand-yellow)] focus-ring"
+              >
+                Legal
+              </Link>
+
+              <Link
+                href="/legal#arrepentimiento"
+                className="rounded-md font-black text-white/54 transition hover:text-[var(--brand-yellow)] focus-ring"
+              >
+                Revocación / arrepentimiento
+              </Link>
 
               <Link
                 href="/admin"
@@ -183,11 +200,22 @@ export function Footer() {
               </Link>
             </div>
 
-            <p>
-              Los precios publicados corresponden a precio contado. Las opciones
-              de financiación se confirman según producto y condiciones
-              vigentes.
-            </p>
+            <div className="flex flex-col gap-2 lg:items-end">
+              <p className="max-w-xl lg:text-right">
+                Los precios publicados corresponden a precio contado. Las
+                opciones de financiación se confirman según producto y
+                condiciones vigentes.
+              </p>
+
+              <a
+                href={developerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-fit rounded-md font-black text-white/54 transition hover:text-[var(--brand-yellow)] focus-ring lg:ml-auto"
+              >
+                Desarrollo by Ivandelucak
+              </a>
+            </div>
           </div>
         </div>
       </div>

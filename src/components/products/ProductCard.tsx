@@ -31,8 +31,85 @@ type ProductCardProps = {
   product: ProductCardProduct;
 };
 
+const categoryPlaceholders: Record<
+  string,
+  {
+    image: string;
+    label: string;
+  }
+> = {
+  celulares: {
+    image: "/categories/celulares.jpg",
+    label: "Celulares",
+  },
+  audio: {
+    image: "/categories/audio.jpg",
+    label: "Audio",
+  },
+  parlantes: {
+    image: "/categories/parlantes.jpg",
+    label: "Parlantes",
+  },
+  bicicletas: {
+    image: "/categories/bicicletas.jpg",
+    label: "Bicicletas",
+  },
+  climatizacion: {
+    image: "/categories/climatizacion.jpg",
+    label: "Climatización",
+  },
+  "cuidado-personal": {
+    image: "/categories/cuidado-personal.jpg",
+    label: "Cuidado personal",
+  },
+  electrodomesticos: {
+    image: "/categories/electrodomesticos.jpg",
+    label: "Electrodomésticos",
+  },
+  "pequenos-electrodomesticos": {
+    image: "/categories/pequenos-electrodomesticos.jpg",
+    label: "Pequeños electrodomésticos",
+  },
+  herramientas: {
+    image: "/categories/herramientas.jpg",
+    label: "Herramientas",
+  },
+  hogar: {
+    image: "/categories/hogar.jpg",
+    label: "Hogar",
+  },
+  "muebles-y-colchones": {
+    image: "/categories/muebles-y-colchones.jpg",
+    label: "Muebles y colchones",
+  },
+  tecnologia: {
+    image: "/categories/tecnologia.jpg",
+    label: "Tecnología",
+  },
+  "tv-y-video": {
+    image: "/categories/tv-y-video.jpg",
+    label: "TV y video",
+  },
+};
+
+function getProductPlaceholder(product: ProductCardProduct) {
+  const subcategorySlug = product.subcategory?.slug;
+  const categorySlug = product.category?.slug;
+
+  if (subcategorySlug && categoryPlaceholders[subcategorySlug]) {
+    return categoryPlaceholders[subcategorySlug];
+  }
+
+  if (categorySlug && categoryPlaceholders[categorySlug]) {
+    return categoryPlaceholders[categorySlug];
+  }
+
+  return null;
+}
+
 export function ProductCard({ product }: ProductCardProps) {
   const primaryImage = product.images[0] ?? null;
+  const placeholder = getProductPlaceholder(product);
   const priceLabel = formatCurrency(product.price);
 
   const categoryLabel =
@@ -69,23 +146,47 @@ export function ProductCard({ product }: ProductCardProps) {
               className="h-full w-full object-contain p-2.5 transition duration-300 group-hover:scale-[1.035] sm:p-5"
             />
           ) : (
-            <div className="relative flex h-full w-full items-center justify-center overflow-hidden p-2.5 sm:p-6">
-              <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[rgba(2,100,169,0.10)] blur-2xl sm:h-36 sm:w-36" />
-              <div className="pointer-events-none absolute -bottom-12 left-6 h-28 w-28 rounded-full bg-[rgba(244,196,48,0.14)] blur-2xl sm:h-36 sm:w-36" />
+            <div className="relative flex h-full w-full items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#F8FBFE_0%,#EAF4FB_100%)]">
+              {placeholder ? (
+                <>
+                  <img
+                    src={placeholder.image}
+                    alt=""
+                    className="h-full w-full object-cover opacity-[0.58] saturate-[1.08] transition duration-300 group-hover:scale-[1.035]"
+                  />
 
-              <div className="relative flex h-full w-full flex-col items-center justify-center rounded-[0.95rem] border border-[#D6E3EF] bg-white/70 text-center sm:rounded-[1.25rem]">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-blue-soft)] text-lg font-black text-[var(--brand-blue)] shadow-sm sm:h-16 sm:w-16 sm:rounded-2xl sm:text-2xl">
-                  {product.name.charAt(0).toUpperCase()}
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.22)_0%,rgba(248,251,254,0.58)_100%)]" />
+
+                  <div className="absolute inset-2 flex flex-col items-center justify-center rounded-[0.95rem] border border-white/80 bg-white/58 text-center shadow-[0_10px_24px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.72)] backdrop-blur-[1px] sm:inset-4 sm:rounded-[1.25rem]">
+                    <p className="text-[8px] font-black uppercase tracking-[0.12em] text-[var(--brand-blue)] sm:text-xs sm:tracking-[0.14em]">
+                      Imagen ilustrativa
+                    </p>
+
+                    <p className="mt-1 max-w-[130px] text-[10.5px] font-black leading-4 text-[var(--brand-blue-dark)] sm:text-sm sm:leading-5">
+                      {placeholder.label}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <div className="relative flex h-full w-full flex-col items-center justify-center p-2.5 text-center sm:p-6">
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[rgba(2,100,169,0.10)] blur-2xl sm:h-36 sm:w-36" />
+                  <div className="pointer-events-none absolute -bottom-12 left-6 h-28 w-28 rounded-full bg-[rgba(244,196,48,0.14)] blur-2xl sm:h-36 sm:w-36" />
+
+                  <div className="relative flex h-full w-full flex-col items-center justify-center rounded-[0.95rem] border border-[#D6E3EF] bg-white/70 text-center sm:rounded-[1.25rem]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--brand-blue-soft)] text-lg font-black text-[var(--brand-blue)] shadow-sm sm:h-16 sm:w-16 sm:rounded-2xl sm:text-2xl">
+                      {product.name.charAt(0).toUpperCase()}
+                    </div>
+
+                    <p className="mt-2 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--brand-blue)] sm:mt-4 sm:text-xs sm:tracking-[0.16em]">
+                      Imagen a confirmar
+                    </p>
+
+                    <p className="mt-1 hidden max-w-[150px] text-xs font-bold leading-5 text-[var(--text-muted)] sm:block">
+                      Producto disponible para consultar.
+                    </p>
+                  </div>
                 </div>
-
-                <p className="mt-2 text-[9px] font-black uppercase tracking-[0.12em] text-[var(--brand-blue)] sm:mt-4 sm:text-xs sm:tracking-[0.16em]">
-                  Imagen a confirmar
-                </p>
-
-                <p className="mt-1 hidden max-w-[150px] text-xs font-bold leading-5 text-[var(--text-muted)] sm:block">
-                  Producto disponible para consultar.
-                </p>
-              </div>
+              )}
             </div>
           )}
 

@@ -5,5 +5,9 @@ export default function AdminRootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <div className="admin-shell min-h-screen bg-[#CBD5E1] [--catalog-bg:#CBD5E1]">
+      {children}
+    </div>
+  );
 }

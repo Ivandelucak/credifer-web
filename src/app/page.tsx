@@ -149,6 +149,60 @@ const purchaseReasons = [
   },
 ];
 
+const serviceAreas = [
+  {
+    title: "Base El Pato / Berazategui",
+    description:
+      "Zonas cercanas a nuestra base principal, con coordinación habitual según producto y disponibilidad.",
+    areas: [
+      "El Pato",
+      "Ing. Juan Allan",
+      "Juan María Gutiérrez",
+      "Pereyra",
+      "Plátanos",
+      "Hudson",
+      "Ranelagh",
+      "Sourigues",
+      "Barrio Marítimo",
+      "Berazategui",
+      "Villa España",
+    ],
+    accent: "bg-[var(--brand-blue)]",
+  },
+  {
+    title: "Base La Plata",
+    description:
+      "También coordinamos consultas y operaciones desde la zona de La Plata y alrededores cercanos.",
+    areas: [
+      "La Plata",
+      "Villa Elisa",
+      "City Bell",
+      "Gonnet",
+      "Gorina",
+      "Arturo Seguí",
+      "El Peligro",
+    ],
+    accent: "bg-[var(--brand-green)]",
+  },
+  {
+    title: "Zonas a consultar",
+    description:
+      "Algunas localidades se evalúan según recorrido, producto, disponibilidad y coordinación.",
+    areas: [
+      "Abasto",
+      "Ángel Etcheverry",
+      "Brandsen",
+      "Tolosa",
+      "Ringuelet",
+      "Villa Castells",
+      "El Rincón",
+      "José Hernández",
+      "Otras zonas cercanas",
+    ],
+    accent: "bg-[var(--brand-yellow)]",
+  },
+];
+
 export default function HomePage() {
   const commerceWhatsappUrl = `https://wa.me/${
     siteConfig.whatsappNumber
@@ -656,6 +710,96 @@ export default function HomePage() {
         </div>
       </section>
 
+      <section className="bg-[var(--catalog-bg)] pt-4 pb-8 lg:pt-5 lg:pb-10">
+        <div className="container-page">
+          <div className="relative overflow-hidden rounded-[2.25rem] border border-[#BDD0E0] bg-[linear-gradient(135deg,#E7F3FF_0%,#F4FAFF_38%,#F8FBFE_72%,#EEF7F3_100%)] p-5 shadow-[0_18px_42px_rgba(15,23,42,0.08)] lg:p-7">
+            <div className="pointer-events-none absolute -right-12 -top-12 h-[430px] w-[430px] rounded-full bg-[rgba(2,100,169,0.24)] blur-[110px]" />
+            <div className="pointer-events-none absolute -bottom-16 left-6 h-[390px] w-[390px] rounded-full bg-[rgba(244,196,48,0.08)] blur-[110px]" />
+
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute right-[-70px] top-[-30px] hidden h-[330px] w-[330px] opacity-[0.065] mix-blend-multiply lg:block"
+            >
+              <img
+                src="/brand/logo-credifer.png"
+                alt=""
+                className="h-full w-full object-contain"
+              />
+            </div>
+
+            <div className="relative z-10">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div>
+                  <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--brand-blue)]">
+                    Zonas de atención cercana
+                  </p>
+
+                  <h2 className="mt-3 max-w-3xl text-3xl font-black tracking-[-0.025em] text-[var(--text-primary)]">
+                    Coordinamos consultas y entregas en zonas cercanas.
+                  </h2>
+
+                  <p className="mt-4 max-w-3xl text-base leading-7 text-[var(--text-secondary)]">
+                    Trabajamos principalmente alrededor de El Pato, Berazategui
+                    y La Plata. Algunas localidades se evalúan según producto,
+                    disponibilidad y recorrido.
+                  </p>
+                </div>
+
+                <Link
+                  href="/contacto"
+                  className="tap-feedback inline-flex w-fit min-h-11 items-center justify-center rounded-2xl border border-[#B7CADA] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:-translate-y-0.5 hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
+                >
+                  Consultar zona
+                </Link>
+              </div>
+
+              <div className="mt-6 grid gap-4 lg:grid-cols-3">
+                {serviceAreas.map((zone) => (
+                  <article
+                    key={zone.title}
+                    className="rounded-[1.5rem] border border-[#C9D6E4] bg-[rgba(232,244,252,0.92)] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]"
+                  >
+                    <span
+                      className={`block h-1.5 w-12 rounded-full ${zone.accent}`}
+                    />
+
+                    <h3 className="mt-4 text-xl font-black tracking-[-0.025em] text-[var(--text-primary)]">
+                      {zone.title}
+                    </h3>
+
+                    <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+                      {zone.description}
+                    </p>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {zone.areas.map((area) => (
+                        <span
+                          key={area}
+                          className="rounded-full border border-[#D6E3EF] bg-[#F8FBFE] px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)]"
+                        >
+                          {area}
+                        </span>
+                      ))}
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="mt-5 rounded-[1.5rem] border border-[#C9D6E4] bg-[var(--brand-blue-soft)] p-4">
+                <p className="text-sm font-black text-[var(--brand-blue-dark)]">
+                  La disponibilidad final se confirma con un asesor.
+                </p>
+
+                <p className="mt-2 text-xs leading-5 text-[var(--text-secondary)]">
+                  Esta información marca zonas habituales de atención cercana,
+                  pero cada operación se coordina según producto, recorrido y
+                  disponibilidad.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       <section className="container-page pb-12">
         <div className="mb-8">
           <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--brand-blue)]">

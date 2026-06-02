@@ -29,6 +29,7 @@ const orderOptions = [
   { label: "Menor precio", value: "precio-asc" },
   { label: "Mayor precio", value: "precio-desc" },
 ];
+const featuredQuickSubcategorySlugs = ["celulares", "parlantes"];
 
 function getPaginationItems(currentPage: number, totalPages: number) {
   const delta = 1;
@@ -158,7 +159,9 @@ function buildProductsUrl(params: {
 
   const queryString = searchParams.toString();
 
-  return queryString ? `/productos?${queryString}` : "/productos";
+  return queryString
+    ? `/productos?${queryString}#catalogo`
+    : "/productos#catalogo";
 }
 
 export default async function ProductsPage({
@@ -175,73 +178,104 @@ export default async function ProductsPage({
   const currentPage = Math.max(1, Number(params.page ?? "1") || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
 
-  const [categories, brands, subcategories] = await Promise.all([
-    prisma.category.findMany({
-      where: {
-        isActive: true,
-      },
-      orderBy: [{ position: "asc" }, { name: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        _count: {
-          select: {
-            products: {
-              where: {
-                isActive: true,
-                deletedAt: null,
+  const [categories, brands, subcategories, featuredQuickSubcategories] =
+    await Promise.all([
+      prisma.category.findMany({
+        where: {
+          isActive: true,
+        },
+        orderBy: [{ position: "asc" }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          _count: {
+            select: {
+              products: {
+                where: {
+                  isActive: true,
+                  deletedAt: null,
+                },
               },
             },
           },
         },
-      },
-    }),
+      }),
 
-    prisma.brand.findMany({
-      where: {
-        products: {
-          some: {
-            isActive: true,
-            deletedAt: null,
+      prisma.brand.findMany({
+        where: {
+          products: {
+            some: {
+              isActive: true,
+              deletedAt: null,
+            },
           },
         },
-      },
-      orderBy: {
-        name: "asc",
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-      },
-    }),
+        orderBy: {
+          name: "asc",
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      }),
 
-    prisma.subcategory.findMany({
-      where: {
-        isActive: true,
-        ...(selectedCategory
-          ? {
-              category: {
-                slug: selectedCategory,
+      prisma.subcategory.findMany({
+        where: {
+          isActive: true,
+          ...(selectedCategory
+            ? {
+                category: {
+                  slug: selectedCategory,
+                },
+              }
+            : {}),
+          products: {
+            some: {
+              isActive: true,
+              deletedAt: null,
+            },
+          },
+        },
+        orderBy: [{ position: "asc" }, { name: "asc" }],
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      }),
+
+      prisma.subcategory.findMany({
+        where: {
+          isActive: true,
+          slug: {
+            in: featuredQuickSubcategorySlugs,
+          },
+          products: {
+            some: {
+              isActive: true,
+              deletedAt: null,
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          _count: {
+            select: {
+              products: {
+                where: {
+                  isActive: true,
+                  deletedAt: null,
+                },
               },
-            }
-          : {}),
-        products: {
-          some: {
-            isActive: true,
-            deletedAt: null,
+            },
           },
         },
-      },
-      orderBy: [{ position: "asc" }, { name: "asc" }],
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-      },
-    }),
-  ]);
+      }),
+    ]);
 
   const where: Prisma.ProductWhereInput = {
     isActive: true,
@@ -395,6 +429,29 @@ export default async function ProductsPage({
 
   const selectedSubcategoryData = subcategories.find(
     (subcategory) => subcategory.slug === selectedSubcategory,
+  );
+
+  const sortedSubcategories = [...subcategories].sort((a, b) => {
+    const aIndex = featuredQuickSubcategorySlugs.indexOf(a.slug);
+    const bIndex = featuredQuickSubcategorySlugs.indexOf(b.slug);
+
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+
+    return a.name.localeCompare(b.name);
+  });
+
+  const sortedFeaturedQuickSubcategories = [...featuredQuickSubcategories].sort(
+    (a, b) => {
+      const aIndex = featuredQuickSubcategorySlugs.indexOf(a.slug);
+      const bIndex = featuredQuickSubcategorySlugs.indexOf(b.slug);
+
+      return aIndex - bIndex;
+    },
   );
 
   const selectedBrandData = brands.find(
@@ -649,6 +706,58 @@ export default async function ProductsPage({
             </div>
           </form>
 
+          {sortedFeaturedQuickSubcategories.length > 0 ? (
+            <div className="mt-4 rounded-[1.5rem] border border-[#B7CADA] bg-white/86 p-3 shadow-[0_12px_28px_rgba(15,23,42,0.07)] backdrop-blur lg:hidden">
+              <div className="mb-3 flex items-center justify-between gap-3">
+                <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--brand-blue)]">
+                  Accesos rápidos
+                </p>
+
+                <Link
+                  href="/categorias"
+                  className="text-xs font-black text-[var(--brand-blue-dark)] transition hover:text-[var(--brand-blue)] focus-ring"
+                >
+                  Ver más
+                </Link>
+              </div>
+
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                <Link
+                  href="/productos#catalogo"
+                  className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-black transition focus-ring ${
+                    !selectedCategory && !selectedSubcategory
+                      ? "border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white shadow-[0_10px_22px_rgba(2,100,169,0.20)]"
+                      : "border-[#C9D6E4] bg-white text-[var(--brand-blue-dark)] hover:border-[var(--brand-blue)]"
+                  }`}
+                >
+                  Todos
+                </Link>
+
+                {sortedFeaturedQuickSubcategories.map((subcategory) => (
+                  <Link
+                    key={`mobile-quick-subcategory-${subcategory.id}`}
+                    href={buildProductsUrl({
+                      q: query,
+                      subcategoria: subcategory.slug,
+                      marca: selectedBrand,
+                      orden: selectedOrder,
+                    })}
+                    className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-black transition focus-ring ${
+                      selectedSubcategory === subcategory.slug
+                        ? "border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white shadow-[0_10px_22px_rgba(2,100,169,0.20)]"
+                        : "border-[#C9D6E4] bg-white text-[var(--brand-blue-dark)] hover:border-[var(--brand-blue)]"
+                    }`}
+                  >
+                    {subcategory.name}
+                    <span className="ml-1.5 text-[10px] opacity-70">
+                      {subcategory._count.products}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           {categories.length > 0 ? (
             <div className="mt-8 hidden rounded-[2rem] border border-[#C9D6E4] bg-white/78 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur lg:block">
               <div className="mb-3 flex items-center justify-between gap-4">
@@ -675,7 +784,27 @@ export default async function ProductsPage({
                 >
                   Todos
                 </Link>
-
+                {sortedFeaturedQuickSubcategories.map((subcategory) => (
+                  <Link
+                    key={`quick-subcategory-${subcategory.id}`}
+                    href={buildProductsUrl({
+                      q: query,
+                      subcategoria: subcategory.slug,
+                      marca: selectedBrand,
+                      orden: selectedOrder,
+                    })}
+                    className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-black transition focus-ring ${
+                      selectedSubcategory === subcategory.slug
+                        ? "border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white shadow-[0_10px_22px_rgba(2,100,169,0.20)]"
+                        : "border-[#C9D6E4] bg-white text-[var(--brand-blue-dark)] hover:border-[var(--brand-blue)]"
+                    }`}
+                  >
+                    {subcategory.name}
+                    <span className="ml-2 text-xs opacity-70">
+                      {subcategory._count.products}
+                    </span>
+                  </Link>
+                ))}
                 {categories.slice(0, 12).map((category) => (
                   <Link
                     key={category.id}
@@ -710,7 +839,7 @@ export default async function ProductsPage({
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <CatalogFilters
             categories={categories}
-            subcategories={subcategories}
+            subcategories={sortedSubcategories}
             brands={brands}
             orderOptions={orderOptions}
             query={query}
