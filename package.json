@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "import:products": "tsx scripts/import-products.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "catalog:reset-import": "tsx scripts/reset-import-products.ts",
+    "catalog:reset-import:apply": "tsx scripts/reset-import-products.ts --apply"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.8.0",

@@ -1,3 +1,4 @@
+//src/components/products/CatalogFilters.tsx
 "use client";
 
 import Link from "next/link";
@@ -42,7 +43,6 @@ type CatalogFiltersProps = {
 
 type FilterFormProps = CatalogFiltersProps & {
   idPrefix: string;
-  onSubmit?: () => void;
 };
 
 function FilterForm({
@@ -56,10 +56,9 @@ function FilterForm({
   selectedBrand,
   selectedOrder,
   idPrefix,
-  onSubmit,
 }: FilterFormProps) {
   return (
-    <form className="mt-5 grid gap-4" action="/productos" onSubmit={onSubmit}>
+    <form className="mt-5 grid gap-4" action="/productos#catalogo" method="GET">
       {query ? <input type="hidden" name="q" value={query} /> : null}
 
       <div>
@@ -209,7 +208,7 @@ export function CatalogFilters(props: CatalogFiltersProps) {
           {props.hasFilters ? (
             <div className="mt-3 flex flex-wrap gap-2">
               <Link
-                href="/productos"
+                href="/productos#catalogo"
                 className="rounded-full border border-[#B7CADA] bg-white px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
               >
                 Limpiar filtros
@@ -241,7 +240,7 @@ export function CatalogFilters(props: CatalogFiltersProps) {
 
           {props.hasFilters ? (
             <Link
-              href="/productos"
+              href="/productos#catalogo"
               className="rounded-full border border-[var(--border)] px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
             >
               Limpiar
@@ -296,7 +295,7 @@ export function CatalogFilters(props: CatalogFiltersProps) {
             <div className="flex-1 overflow-y-auto px-5 py-5">
               {props.hasFilters ? (
                 <Link
-                  href="/productos"
+                  href="/productos#catalogo"
                   className="mb-4 inline-flex rounded-full border border-[#B7CADA] bg-white px-4 py-2 text-xs font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
                 >
                   Limpiar filtros
@@ -304,11 +303,7 @@ export function CatalogFilters(props: CatalogFiltersProps) {
               ) : null}
 
               <div className="rounded-[1.75rem] border border-[#C9D6E4] bg-white p-4 shadow-sm">
-                <FilterForm
-                  {...props}
-                  idPrefix="mobile-filter"
-                  onSubmit={() => setIsOpen(false)}
-                />
+                <FilterForm {...props} idPrefix="mobile-filter" />
               </div>
             </div>
           </div>

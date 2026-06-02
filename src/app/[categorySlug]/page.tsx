@@ -14,7 +14,20 @@ type CategoryPageProps = {
   params: Promise<{
     categorySlug: string;
   }>;
+  searchParams: Promise<{
+    q?: string;
+    marca?: string;
+    orden?: string;
+  }>;
 };
+
+const sectionOrderOptions = [
+  { label: "Más recientes", value: "recientes" },
+  { label: "Nombre A-Z", value: "nombre-asc" },
+  { label: "Menor precio", value: "precio-asc" },
+  { label: "Mayor precio", value: "precio-desc" },
+  { label: "Marca A-Z", value: "marca-asc" },
+];
 
 type CatalogSection =
   | {
@@ -204,63 +217,152 @@ export async function generateMetadata({
   };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: CategoryPageProps) {
   const { categorySlug } = await params;
+  const { q, marca, orden } = await searchParams;
+
+  const query = (q ?? "").trim();
+  const selectedBrand = (marca ?? "").trim();
+
+  const selectedOrder = sectionOrderOptions.some(
+    (option) => option.value === orden,
+  )
+    ? String(orden)
+    : "recientes";
+
+  const hasSectionFilters = Boolean(
+    query || selectedBrand || selectedOrder !== "recientes",
+  );
+
   const section = await getCatalogSection(categorySlug);
 
   if (!section) {
     notFound();
   }
 
-  const products = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      deletedAt: null,
-      ...(section.type === "category"
-        ? { categoryId: section.id }
-        : { subcategoryId: section.id }),
-    },
-    orderBy: [
-      { isFeatured: "desc" },
-      { isOffer: "desc" },
-      { createdAt: "desc" },
-    ],
-    take: 60,
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      price: true,
-      descriptionShort: true,
-      isFeatured: true,
-      isOffer: true,
-      category: {
-        select: {
-          name: true,
-          slug: true,
+  const sectionProductFilter =
+    section.type === "category"
+      ? { categoryId: section.id }
+      : { subcategoryId: section.id };
+
+  const productWhere = {
+    isActive: true,
+    deletedAt: null,
+    ...sectionProductFilter,
+    ...(query
+      ? {
+          OR: [
+            {
+              name: {
+                contains: query,
+              },
+            },
+            {
+              descriptionShort: {
+                contains: query,
+              },
+            },
+            {
+              brand: {
+                is: {
+                  name: {
+                    contains: query,
+                  },
+                },
+              },
+            },
+          ],
+        }
+      : {}),
+    ...(selectedBrand
+      ? {
+          brand: {
+            is: {
+              slug: selectedBrand,
+            },
+          },
+        }
+      : {}),
+  };
+
+  const productOrderBy =
+    selectedOrder === "nombre-asc"
+      ? [{ name: "asc" as const }]
+      : selectedOrder === "precio-asc"
+        ? [{ price: "asc" as const }, { name: "asc" as const }]
+        : selectedOrder === "precio-desc"
+          ? [{ price: "desc" as const }, { name: "asc" as const }]
+          : selectedOrder === "marca-asc"
+            ? [{ brand: { name: "asc" as const } }, { name: "asc" as const }]
+            : [
+                { isFeatured: "desc" as const },
+                { isOffer: "desc" as const },
+                { createdAt: "desc" as const },
+              ];
+
+  const [products, availableBrands] = await Promise.all([
+    prisma.product.findMany({
+      where: productWhere,
+      orderBy: productOrderBy,
+      take: 60,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        price: true,
+        descriptionShort: true,
+        isFeatured: true,
+        isOffer: true,
+        category: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        subcategory: {
+          select: {
+            name: true,
+            slug: true,
+          },
+        },
+        brand: {
+          select: {
+            name: true,
+          },
+        },
+        images: {
+          orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
+          take: 1,
+          select: {
+            url: true,
+            alt: true,
+          },
         },
       },
-      subcategory: {
-        select: {
-          name: true,
-          slug: true,
+    }),
+    prisma.brand.findMany({
+      where: {
+        products: {
+          some: {
+            isActive: true,
+            deletedAt: null,
+            ...sectionProductFilter,
+          },
         },
       },
-      brand: {
-        select: {
-          name: true,
-        },
+      orderBy: {
+        name: "asc",
       },
-      images: {
-        orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
-        take: 1,
-        select: {
-          url: true,
-          alt: true,
-        },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
       },
-    },
-  });
+    }),
+  ]);
 
   const serializedProducts = products.map(
     (product: (typeof products)[number]) => ({
@@ -430,13 +532,103 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
               <Link
                 href="/productos"
-                className="w-fit rounded-full border border-[#B7CADA] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
+                className="hidden w-fit rounded-full border border-[#B7CADA] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring sm:inline-flex"
               >
                 Ver catálogo completo
               </Link>
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <form
+              id="section-products"
+              action={`/${section.slug}#section-products`}
+              method="GET"
+              className="mb-5 scroll-mt-24 rounded-[1.5rem] border border-[#B7CADA] bg-white p-4 shadow-[0_12px_30px_rgba(15,23,42,0.07)] lg:scroll-mt-32 lg:rounded-[2rem] lg:p-5"
+            >
+              <div className="grid gap-3 lg:grid-cols-[1fr_220px_220px_auto] lg:items-end">
+                <div>
+                  <label
+                    htmlFor="section-search"
+                    className="mb-1.5 block text-xs font-black uppercase tracking-[0.14em] text-[var(--brand-blue)]"
+                  >
+                    Buscar en {section.name}
+                  </label>
+
+                  <input
+                    id="section-search"
+                    name="q"
+                    type="search"
+                    defaultValue={query}
+                    placeholder="Buscar producto, modelo o marca..."
+                    className="h-12 w-full rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition placeholder:text-[var(--text-muted)] focus:border-[var(--brand-blue)]"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="section-brand"
+                    className="mb-1.5 block text-xs font-black uppercase tracking-[0.14em] text-[var(--text-muted)]"
+                  >
+                    Marca
+                  </label>
+
+                  <select
+                    id="section-brand"
+                    name="marca"
+                    defaultValue={selectedBrand}
+                    className="h-12 w-full rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+                  >
+                    <option value="">Todas</option>
+                    {availableBrands.map((brand) => (
+                      <option key={brand.id} value={brand.slug}>
+                        {brand.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="section-order"
+                    className="mb-1.5 block text-xs font-black uppercase tracking-[0.14em] text-[var(--text-muted)]"
+                  >
+                    Orden
+                  </label>
+
+                  <select
+                    id="section-order"
+                    name="orden"
+                    defaultValue={selectedOrder}
+                    className="h-12 w-full rounded-2xl border border-[#C9D6E4] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+                  >
+                    {sectionOrderOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="tap-feedback inline-flex h-12 items-center justify-center rounded-2xl bg-[var(--brand-blue)] px-5 text-sm font-black text-white shadow-[0_12px_24px_rgba(2,100,169,0.18)] transition hover:bg-[var(--brand-blue-dark)] focus-ring"
+                >
+                  Filtrar
+                </button>
+              </div>
+
+              {hasSectionFilters ? (
+                <div className="mt-3 flex justify-end">
+                  <Link
+                    href={`/${section.slug}#section-products`}
+                    className="inline-flex min-h-10 items-center justify-center rounded-full border border-[#C9D6E4] bg-white px-4 py-2 text-xs font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
+                  >
+                    Limpiar filtros
+                  </Link>
+                </div>
+              ) : null}
+            </form>
+
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 lg:gap-5 xl:grid-cols-4">
               {serializedProducts.map(
                 (product: (typeof serializedProducts)[number]) => (
                   <ProductCard key={product.id} product={product} />

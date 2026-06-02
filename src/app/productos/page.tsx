@@ -30,6 +30,86 @@ const orderOptions = [
   { label: "Mayor precio", value: "precio-desc" },
 ];
 
+function getPaginationItems(currentPage: number, totalPages: number) {
+  const delta = 1;
+  const range: number[] = [];
+  const items: Array<number | "ellipsis"> = [];
+
+  for (
+    let page = Math.max(2, currentPage - delta);
+    page <= Math.min(totalPages - 1, currentPage + delta);
+    page += 1
+  ) {
+    range.push(page);
+  }
+
+  items.push(1);
+
+  if (currentPage - delta > 2) {
+    items.push("ellipsis");
+  }
+
+  items.push(...range);
+
+  if (currentPage + delta < totalPages - 1) {
+    items.push("ellipsis");
+  }
+
+  if (totalPages > 1) {
+    items.push(totalPages);
+  }
+
+  return items;
+}
+
+function createProductsPageHref({
+  page,
+  query,
+  selectedCategory,
+  selectedSubcategory,
+  selectedBrand,
+  selectedOrder,
+}: {
+  page: number;
+  query: string;
+  selectedCategory: string;
+  selectedSubcategory: string;
+  selectedBrand: string;
+  selectedOrder: string;
+}) {
+  const params = new URLSearchParams();
+
+  if (query) {
+    params.set("q", query);
+  }
+
+  if (selectedCategory) {
+    params.set("categoria", selectedCategory);
+  }
+
+  if (selectedSubcategory) {
+    params.set("subcategoria", selectedSubcategory);
+  }
+
+  if (selectedBrand) {
+    params.set("marca", selectedBrand);
+  }
+
+  if (selectedOrder && selectedOrder !== "recientes") {
+    params.set("orden", selectedOrder);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const queryString = params.toString();
+
+  return queryString
+    ? `/productos?${queryString}#catalogo`
+    : "/productos#catalogo";
+}
+
 function getOrderBy(order: string): Prisma.ProductOrderByWithRelationInput[] {
   if (order === "nombre-asc") {
     return [{ name: "asc" }];
@@ -283,6 +363,7 @@ export default async function ProductsPage({
   }));
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE));
+  const paginationItems = getPaginationItems(currentPage, totalPages);
 
   const previousUrl =
     currentPage > 1
@@ -364,8 +445,8 @@ export default async function ProductsPage({
           </div>
         </div>
 
-        <div className="container-page relative py-10 lg:py-14">
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_390px] lg:items-center">
+        <div className="container-page relative py-4 lg:py-14">
+          <div className="hidden gap-8 lg:grid lg:grid-cols-[minmax(0,1fr)_390px] lg:items-center">
             <div>
               <div className="inline-flex items-center gap-3 rounded-[1.35rem] border border-[#B7CADA] bg-white/86 px-4 py-3 shadow-[0_12px_26px_rgba(15,23,42,0.08)] backdrop-blur">
                 <span className="h-3 w-3 rounded-full bg-[var(--brand-blue)]" />
@@ -417,7 +498,7 @@ export default async function ProductsPage({
               </div>
 
               <form
-                action="/productos"
+                action="/productos#catalogo"
                 className="mt-5 hidden rounded-[1.75rem] border border-[#B7CADA] bg-white/92 p-3 shadow-[0_18px_42px_rgba(15,23,42,0.10)] backdrop-blur lg:block"
               >
                 {selectedCategory ? (
@@ -527,8 +608,8 @@ export default async function ProductsPage({
           </div>
 
           <form
-            action="/productos"
-            className="mt-5 rounded-[1.75rem] border border-[#B7CADA] bg-white/92 p-3 shadow-[0_18px_42px_rgba(15,23,42,0.10)] backdrop-blur lg:hidden"
+            action="/productos#catalogo"
+            className="rounded-[1.5rem] border border-[#B7CADA] bg-white/94 p-3 shadow-[0_14px_34px_rgba(15,23,42,0.10)] backdrop-blur lg:hidden"
           >
             {selectedCategory ? (
               <input type="hidden" name="categoria" value={selectedCategory} />
@@ -569,7 +650,7 @@ export default async function ProductsPage({
           </form>
 
           {categories.length > 0 ? (
-            <div className="mt-8 rounded-[2rem] border border-[#C9D6E4] bg-white/78 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur">
+            <div className="mt-8 hidden rounded-[2rem] border border-[#C9D6E4] bg-white/78 p-4 shadow-[0_12px_30px_rgba(15,23,42,0.06)] backdrop-blur lg:block">
               <div className="mb-3 flex items-center justify-between gap-4">
                 <h2 className="text-xs font-black uppercase tracking-[0.18em] text-[var(--text-muted)]">
                   Accesos rápidos
@@ -622,7 +703,10 @@ export default async function ProductsPage({
         </div>
       </div>
 
-      <div className="container-page py-7 lg:py-9">
+      <div
+        id="catalogo"
+        className="container-page scroll-mt-24 py-4 lg:scroll-mt-32 lg:py-9"
+      >
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           <CatalogFilters
             categories={categories}
@@ -639,7 +723,7 @@ export default async function ProductsPage({
           />
 
           <div>
-            <div className="rounded-[2rem] border border-[var(--catalog-border)] bg-white p-5 shadow-sm">
+            <div className="rounded-[1.5rem] border border-[var(--catalog-border)] bg-white p-4 shadow-sm lg:rounded-[2rem] lg:p-5">
               <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                 <div>
                   <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--brand-blue)]">
@@ -711,7 +795,7 @@ export default async function ProductsPage({
             </div>
 
             {serializedProducts.length > 0 ? (
-              <div className="mt-6 grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:mt-6 lg:grid-cols-3 lg:gap-5 2xl:grid-cols-4">
                 {serializedProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -737,44 +821,102 @@ export default async function ProductsPage({
             )}
 
             {totalPages > 1 ? (
-              <div className="mt-8 flex flex-col gap-3 rounded-[2rem] border border-[var(--catalog-border)] bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm font-bold text-[var(--text-secondary)]">
-                  Página{" "}
-                  <span className="font-black text-[var(--text-primary)]">
-                    {currentPage}
-                  </span>{" "}
-                  de{" "}
-                  <span className="font-black text-[var(--text-primary)]">
-                    {totalPages}
-                  </span>
-                </p>
-
-                <div className="flex gap-3">
-                  {previousUrl ? (
-                    <Link
-                      href={previousUrl}
-                      className="rounded-full border border-[var(--border)] bg-white px-5 py-3 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
-                    >
-                      Anterior
-                    </Link>
-                  ) : (
-                    <span className="rounded-full border border-[var(--border)] bg-white px-5 py-3 text-sm font-black text-[var(--text-muted)] opacity-50">
-                      Anterior
+              <div className="mt-8 rounded-[1.75rem] border border-[#B7CADA] bg-white p-4 shadow-[0_14px_34px_rgba(15,23,42,0.07)] lg:rounded-[2rem] lg:p-5">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <p className="text-sm font-black text-[var(--text-secondary)]">
+                    Página{" "}
+                    <span className="text-[var(--text-primary)]">
+                      {currentPage}
+                    </span>{" "}
+                    de{" "}
+                    <span className="text-[var(--text-primary)]">
+                      {totalPages}
                     </span>
-                  )}
+                  </p>
 
-                  {nextUrl ? (
-                    <Link
-                      href={nextUrl}
-                      className="rounded-full border border-[var(--border)] bg-white px-5 py-3 text-sm font-black text-[var(--brand-blue-dark)] transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
-                    >
-                      Siguiente
-                    </Link>
-                  ) : (
-                    <span className="rounded-full border border-[var(--border)] bg-white px-5 py-3 text-sm font-black text-[var(--text-muted)] opacity-50">
-                      Siguiente
-                    </span>
-                  )}
+                  <nav
+                    aria-label="Paginación de productos"
+                    className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end"
+                  >
+                    {currentPage > 1 ? (
+                      <Link
+                        href={createProductsPageHref({
+                          page: currentPage - 1,
+                          query,
+                          selectedCategory,
+                          selectedSubcategory,
+                          selectedBrand,
+                          selectedOrder,
+                        })}
+                        className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#C9D6E4] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
+                      >
+                        Anterior
+                      </Link>
+                    ) : (
+                      <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#E2E8F0] bg-white px-5 py-2.5 text-sm font-black text-slate-400">
+                        Anterior
+                      </span>
+                    )}
+
+                    <div className="flex max-w-full gap-1.5 overflow-x-auto rounded-full bg-[#F1F6FA] p-1.5">
+                      {paginationItems.map((item, index) => {
+                        if (item === "ellipsis") {
+                          return (
+                            <span
+                              key={`ellipsis-${index}`}
+                              className="inline-flex h-10 min-w-10 items-center justify-center rounded-full px-2 text-sm font-black text-[var(--text-muted)]"
+                            >
+                              …
+                            </span>
+                          );
+                        }
+
+                        const isCurrent = item === currentPage;
+
+                        return (
+                          <Link
+                            key={item}
+                            href={createProductsPageHref({
+                              page: item,
+                              query,
+                              selectedCategory,
+                              selectedSubcategory,
+                              selectedBrand,
+                              selectedOrder,
+                            })}
+                            aria-current={isCurrent ? "page" : undefined}
+                            className={`inline-flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-sm font-black transition focus-ring ${
+                              isCurrent
+                                ? "bg-[var(--brand-blue)] text-white shadow-[0_10px_22px_rgba(2,100,169,0.22)]"
+                                : "bg-white text-[var(--brand-blue-dark)] shadow-sm hover:text-[var(--brand-blue)]"
+                            }`}
+                          >
+                            {item}
+                          </Link>
+                        );
+                      })}
+                    </div>
+
+                    {currentPage < totalPages ? (
+                      <Link
+                        href={createProductsPageHref({
+                          page: currentPage + 1,
+                          query,
+                          selectedCategory,
+                          selectedSubcategory,
+                          selectedBrand,
+                          selectedOrder,
+                        })}
+                        className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-black text-white shadow-[0_12px_24px_rgba(2,100,169,0.18)] transition hover:bg-[var(--brand-blue-dark)] focus-ring"
+                      >
+                        Siguiente
+                      </Link>
+                    ) : (
+                      <span className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#E2E8F0] bg-white px-5 py-2.5 text-sm font-black text-slate-400">
+                        Siguiente
+                      </span>
+                    )}
+                  </nav>
                 </div>
               </div>
             ) : null}

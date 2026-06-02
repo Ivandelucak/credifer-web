@@ -1,3 +1,4 @@
+//src/app/page.tsx
 import Link from "next/link";
 import { siteConfig } from "@/lib/site";
 import Image from "next/image";
@@ -44,6 +45,21 @@ const heroBenefits = [
     label: "Atención",
     value: "Asesoramiento personalizado",
     accent: "bg-[var(--brand-red)]",
+  },
+];
+
+const mobileHeroChips = [
+  {
+    label: "Cuotas",
+    value: "Financiación",
+  },
+  {
+    label: "Stock",
+    value: "Consulta",
+  },
+  {
+    label: "Entrega",
+    value: "Coordinada",
   },
 ];
 
@@ -193,6 +209,22 @@ export default function HomePage() {
               financiación, disponibilidad y entrega con atención personalizada.
             </p>
 
+            <div className="mt-5 grid grid-cols-3 gap-2 lg:hidden">
+              {mobileHeroChips.map((chip) => (
+                <div
+                  key={chip.label}
+                  className="rounded-2xl border border-[#C9D6E4] bg-white/82 px-2.5 py-2.5 text-center shadow-[0_10px_24px_rgba(15,23,42,0.07)] backdrop-blur"
+                >
+                  <p className="text-[10px] font-black uppercase tracking-[0.12em] text-[var(--brand-blue)]">
+                    {chip.label}
+                  </p>
+                  <p className="mt-0.5 text-[11px] font-black leading-4 text-[var(--brand-blue-dark)]">
+                    {chip.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/productos"
@@ -207,6 +239,23 @@ export default function HomePage() {
               >
                 Cómo comprar
               </Link>
+            </div>
+
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute left-1/2 top-[250px] z-[1] h-[360px] w-[360px] -translate-x-1/2 -translate-y-1/2 opacity-[0.16] mix-blend-multiply lg:hidden"
+            >
+              <div className="absolute left-1/2 top-1/2 h-[280px] w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[rgba(244,196,48,0.16)] blur-3xl" />
+
+              <div className="relative h-full w-full">
+                <Image
+                  src="/brand/logo-credifer.png"
+                  alt=""
+                  fill
+                  sizes="360px"
+                  className="object-contain"
+                />
+              </div>
             </div>
 
             <div className="mt-8 hidden gap-3 sm:grid sm:grid-cols-3">

@@ -1,3 +1,4 @@
+//src/app/categorias/page.tsx
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
@@ -216,7 +217,7 @@ export default async function CategoriesPage() {
         <div className="pointer-events-none absolute -left-24 top-12 h-72 w-72 rounded-full bg-[rgba(2,100,169,0.14)] blur-3xl" />
         <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-[rgba(244,196,48,0.18)] blur-3xl" />
 
-        <div className="container-page relative py-10 lg:py-16">
+        <div className="container-page relative py-6 lg:py-16">
           <div
             aria-hidden="true"
             className="pointer-events-none absolute left-[38%] top-[45%] hidden h-[620px] w-[620px] -translate-y-1/2 opacity-[0.1] lg:block xl:left-[42%] xl:h-[660px] xl:w-[660px]"
@@ -243,13 +244,13 @@ export default async function CategoriesPage() {
               Elegí una categoría y encontrá rápido lo que necesitás.
             </h1>
 
-            <p className="mt-5 max-w-3xl text-base leading-7 text-[var(--text-secondary)] lg:text-lg lg:leading-8">
+            <p className="mt-5 hidden max-w-3xl text-base leading-7 text-[var(--text-secondary)] lg:block lg:text-lg lg:leading-8">
               Navegá el catálogo Credifer por rubros, revisá productos
               disponibles y armá tu consulta para coordinar precio contado,
               cuotas, financiación y entrega.
             </p>
 
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-7 hidden flex-wrap gap-3 lg:flex">
               <Link
                 href="/productos"
                 className="tap-feedback inline-flex min-h-12 items-center justify-center rounded-2xl bg-[var(--brand-blue)] px-6 py-3 text-sm font-black text-white shadow-[0_14px_28px_rgba(2,100,169,0.22)] transition hover:-translate-y-0.5 hover:bg-[var(--brand-blue-dark)] focus-ring"
@@ -266,7 +267,7 @@ export default async function CategoriesPage() {
             </div>
           </div>
 
-          <div className="mt-9 grid gap-4 md:grid-cols-3">
+          <div className="mt-9 hidden gap-4 md:grid-cols-3 lg:grid">
             {categoryHeroBenefits.map((benefit) => (
               <div
                 key={benefit.title}
@@ -289,27 +290,27 @@ export default async function CategoriesPage() {
         </div>
       </div>
 
-      <div className="container-page py-9 lg:py-12">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="container-page py-5 lg:py-12">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between lg:mb-6">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--brand-blue)]">
+            <p className="hidden text-xs font-black uppercase tracking-[0.18em] text-[var(--brand-blue)] lg:block">
               Categorías
             </p>
 
-            <h2 className="mt-2 text-3xl font-black tracking-[-0.03em] text-[var(--text-primary)]">
+            <h2 className="text-2xl font-black tracking-[-0.03em] text-[var(--text-primary)] lg:mt-2 lg:text-3xl">
               Elegí la sección que necesitás.
             </h2>
           </div>
 
           <Link
             href="/productos"
-            className="w-fit rounded-full border border-[#B7CADA] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
+            className="hidden w-fit rounded-full border border-[#B7CADA] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring lg:inline-flex"
           >
             Ver catálogo completo
           </Link>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {catalogSections.map((category, index) => {
             const visual = categoryVisuals[category.slug];
             const accent = visual?.accent ?? getFallbackAccent(index);
@@ -321,7 +322,7 @@ export default async function CategoriesPage() {
                 className="group flex overflow-hidden rounded-[2rem] border border-[#B7CADA] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.065)] transition duration-200 hover:-translate-y-1 hover:border-[var(--brand-blue)] hover:shadow-[var(--catalog-shadow)] focus-ring"
               >
                 <div className="flex w-full flex-col">
-                  <div className="relative aspect-[16/10] overflow-hidden border-b border-[#D6E3EF] bg-[var(--catalog-surface-soft)]">
+                  <div className="relative aspect-[16/9] overflow-hidden border-b border-[#D6E3EF] bg-[var(--catalog-surface-soft)] lg:aspect-[16/10]">
                     {visual?.image ? (
                       <Image
                         src={visual.image}
@@ -345,23 +346,23 @@ export default async function CategoriesPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-1 flex-col p-5">
+                  <div className="flex flex-1 flex-col p-4 lg:p-5">
                     <div>
-                      <p className="text-xs font-black uppercase tracking-[0.16em] text-[var(--brand-blue)]">
+                      <p className="hidden text-xs font-black uppercase tracking-[0.16em] text-[var(--brand-blue)] lg:block">
                         Sección
                       </p>
 
-                      <h3 className="mt-2 text-2xl font-black leading-tight tracking-[-0.025em] text-[var(--text-primary)] transition group-hover:text-[var(--brand-blue)] sm:text-[1.6rem]">
+                      <h3 className="text-xl font-black leading-tight tracking-[-0.025em] text-[var(--text-primary)] transition group-hover:text-[var(--brand-blue)] lg:mt-2 lg:text-2xl sm:text-[1.45rem]">
                         {category.name}
                       </h3>
 
-                      <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">
+                      <p className="mt-3 hidden text-sm leading-6 text-[var(--text-secondary)] lg:block">
                         {category.description ??
                           "Productos disponibles para consultar precio contado, cuotas, financiación y disponibilidad."}
                       </p>
 
                       {category.subcategories.length > 0 ? (
-                        <div className="mt-4 flex flex-wrap gap-2">
+                        <div className="mt-4 hidden flex-wrap gap-2 lg:flex">
                           {category.subcategories.map((subcategory) => (
                             <span
                               key={subcategory.id}
@@ -374,7 +375,7 @@ export default async function CategoriesPage() {
                       ) : null}
                     </div>
 
-                    <div className="mt-auto pt-5">
+                    <div className="mt-auto pt-4 lg:pt-5">
                       <div className="flex items-center justify-between gap-4 border-t border-[#D6E3EF] pt-4">
                         <div>
                           <p className="text-2xl font-black text-[var(--brand-blue-dark)]">
@@ -385,7 +386,7 @@ export default async function CategoriesPage() {
                           </p>
                         </div>
 
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] px-4 py-2 text-sm font-black text-white transition group-hover:bg-[var(--brand-blue-dark)]">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-[var(--brand-blue)] px-3 py-2 text-xs font-black text-white transition group-hover:bg-[var(--brand-blue-dark)] lg:px-4 lg:text-sm">
                           Entrar
                           <span aria-hidden="true">→</span>
                         </span>
