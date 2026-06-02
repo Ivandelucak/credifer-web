@@ -51,6 +51,8 @@ export function ProductImagesManager({
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [imageToDelete, setImageToDelete] = useState<ProductImage | null>(null);
+  const [previewImage, setPreviewImage] = useState<ProductImage | null>(null);
 
   const uploadFiles = useCallback(
     async (files: File[]) => {
@@ -191,12 +193,6 @@ export function ProductImagesManager({
   }
 
   async function handleDeleteImage(imageId: number) {
-    const confirmDelete = window.confirm(
-      "¿Seguro que querés eliminar esta imagen?",
-    );
-
-    if (!confirmDelete) return;
-
     setWorkingImageId(imageId);
     setMessage(null);
 
@@ -218,6 +214,7 @@ export function ProductImagesManager({
         text: "Imagen eliminada correctamente.",
       });
 
+      setImageToDelete(null);
       router.refresh();
     } catch (error) {
       setMessage({
@@ -334,11 +331,22 @@ export function ProductImagesManager({
                 className="overflow-hidden rounded-3xl border border-[var(--border)] bg-white shadow-sm"
               >
                 <div className="relative aspect-square bg-[var(--surface-muted)]">
-                  <img
-                    src={image.url}
-                    alt={image.alt ?? productName}
-                    className="h-full w-full object-contain p-4"
-                  />
+                  <button
+                    type="button"
+                    onClick={() => setPreviewImage(image)}
+                    className="group h-full w-full focus-ring"
+                    aria-label={`Ver imagen de ${productName}`}
+                  >
+                    <img
+                      src={image.url}
+                      alt={image.alt ?? productName}
+                      className="h-full w-full object-contain p-4 transition duration-200 group-hover:scale-[1.035]"
+                    />
+
+                    <span className="pointer-events-none absolute inset-x-4 bottom-4 rounded-2xl bg-slate-950/70 px-3 py-2 text-center text-xs font-black text-white opacity-0 shadow-lg backdrop-blur transition group-hover:opacity-100">
+                      Ver imagen
+                    </span>
+                  </button>
 
                   {image.isPrimary ? (
                     <span className="absolute left-3 top-3 rounded-full bg-[var(--brand-blue)] px-3 py-1 text-xs font-black text-white">
@@ -359,7 +367,7 @@ export function ProductImagesManager({
 
                   <button
                     type="button"
-                    onClick={() => handleDeleteImage(image.id)}
+                    onClick={() => setImageToDelete(image)}
                     disabled={isWorking}
                     className="rounded-full border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-700 transition hover:border-red-300 disabled:cursor-not-allowed disabled:opacity-50 focus-ring"
                   >
@@ -382,6 +390,99 @@ export function ProductImagesManager({
           </p>
         </div>
       )}
+
+      {previewImage ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm">
+          <div className="relative flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[2rem] border border-[#8FA2B8] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.32)]">
+            <div className="flex items-center justify-between gap-4 border-b border-[#D6E3EF] bg-[linear-gradient(135deg,#F8FBFE_0%,#EAF4FB_100%)] px-5 py-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--brand-blue)]">
+                  Vista previa
+                </p>
+
+                <h3 className="mt-1 line-clamp-1 text-xl font-black text-[var(--text-primary)]">
+                  {productName}
+                </h3>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                className="tap-feedback inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#8FA2B8] bg-white text-xl font-black text-[var(--brand-blue-dark)] transition hover:-translate-y-0.5 hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
+                aria-label="Cerrar vista previa"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="flex min-h-0 flex-1 items-center justify-center bg-[#F8FBFE] p-4 sm:p-6">
+              <img
+                src={previewImage.url}
+                alt={previewImage.alt ?? productName}
+                className="max-h-[72vh] w-full object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {imageToDelete ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-sm">
+          <div className="w-full max-w-md overflow-hidden rounded-[2rem] border border-[#8FA2B8] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.28)]">
+            <div className="border-b border-[#D6E3EF] bg-[linear-gradient(135deg,#F8FBFE_0%,#EAF4FB_100%)] px-6 py-5">
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--brand-red)]">
+                Confirmar eliminación
+              </p>
+
+              <h3 className="mt-2 text-2xl font-black tracking-[-0.03em] text-[var(--text-primary)]">
+                Eliminar imagen
+              </h3>
+            </div>
+
+            <div className="p-6">
+              <p className="text-sm leading-6 text-[var(--text-secondary)]">
+                Vas a eliminar esta imagen del producto{" "}
+                <span className="font-black text-[var(--text-primary)]">
+                  {productName}
+                </span>
+                . Esta acción no elimina el producto ni modifica sus datos.
+              </p>
+
+              <div className="mt-5 rounded-[1.25rem] border border-[#D6E3EF] bg-[#F8FBFE] p-3">
+                <div className="relative mx-auto h-36 w-36 overflow-hidden rounded-2xl border border-[#B7CADA] bg-white">
+                  <img
+                    src={imageToDelete.url}
+                    alt={imageToDelete.alt ?? productName}
+                    className="h-full w-full object-contain p-2"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setImageToDelete(null)}
+                  disabled={workingImageId === imageToDelete.id}
+                  className="tap-feedback inline-flex min-h-11 items-center justify-center rounded-2xl border border-[#8FA2B8] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] transition hover:-translate-y-0.5 hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] disabled:cursor-not-allowed disabled:opacity-60 focus-ring"
+                >
+                  Cancelar
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeleteImage(imageToDelete.id)}
+                  disabled={workingImageId === imageToDelete.id}
+                  className="tap-feedback inline-flex min-h-11 items-center justify-center rounded-2xl bg-[var(--brand-red)] px-5 py-2.5 text-sm font-black text-white shadow-[0_10px_22px_rgba(216,33,40,0.18)] transition hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-70 focus-ring"
+                >
+                  {workingImageId === imageToDelete.id
+                    ? "Eliminando..."
+                    : "Eliminar imagen"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }
