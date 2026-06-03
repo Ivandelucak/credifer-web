@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -29,48 +30,99 @@ export async function GET(request: Request) {
   }
 
   try {
-    const products = await prisma.product.findMany({
-      where: {
-        deletedAt: null,
-        OR: [
-          {
+    const [matchingBrands, matchingCategories, matchingSubcategories] =
+      await Promise.all([
+        prisma.brand.findMany({
+          where: {
             name: {
               contains: query,
             },
           },
-          {
-            code: {
+          select: {
+            id: true,
+          },
+        }),
+
+        prisma.category.findMany({
+          where: {
+            name: {
               contains: query,
             },
           },
-          {
-            brand: {
-              is: {
-                name: {
-                  contains: query,
-                },
-              },
+          select: {
+            id: true,
+          },
+        }),
+
+        prisma.subcategory.findMany({
+          where: {
+            name: {
+              contains: query,
             },
           },
-          {
-            category: {
-              is: {
-                name: {
-                  contains: query,
-                },
+          select: {
+            id: true,
+          },
+        }),
+      ]);
+
+    const matchingBrandIds = matchingBrands.map((brand) => brand.id);
+    const matchingCategoryIds = matchingCategories.map(
+      (category) => category.id,
+    );
+    const matchingSubcategoryIds = matchingSubcategories.map(
+      (subcategory) => subcategory.id,
+    );
+
+    const searchConditions: Prisma.ProductWhereInput[] = [
+      {
+        name: {
+          contains: query,
+        },
+      },
+      {
+        code: {
+          contains: query,
+        },
+      },
+      {
+        descriptionShort: {
+          contains: query,
+        },
+      },
+      ...(matchingBrandIds.length > 0
+        ? [
+            {
+              brandId: {
+                in: matchingBrandIds,
               },
             },
-          },
-          {
-            subcategory: {
-              is: {
-                name: {
-                  contains: query,
-                },
+          ]
+        : []),
+      ...(matchingCategoryIds.length > 0
+        ? [
+            {
+              categoryId: {
+                in: matchingCategoryIds,
               },
             },
-          },
-        ],
+          ]
+        : []),
+      ...(matchingSubcategoryIds.length > 0
+        ? [
+            {
+              subcategoryId: {
+                in: matchingSubcategoryIds,
+              },
+            },
+          ]
+        : []),
+    ];
+
+    const products = await prisma.product.findMany({
+      where: {
+        deletedAt: null,
+        OR: searchConditions,
       },
       orderBy: [{ isActive: "desc" }, { updatedAt: "desc" }],
       take: 8,

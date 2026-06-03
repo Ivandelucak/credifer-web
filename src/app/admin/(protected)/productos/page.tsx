@@ -139,6 +139,96 @@ export default async function AdminProductsPage({
     },
   });
 
+  const [matchingBrands, matchingCategories, matchingSubcategories] = query
+    ? await Promise.all([
+        prisma.brand.findMany({
+          where: {
+            name: {
+              contains: query,
+            },
+          },
+          select: {
+            id: true,
+          },
+        }),
+
+        prisma.category.findMany({
+          where: {
+            name: {
+              contains: query,
+            },
+          },
+          select: {
+            id: true,
+          },
+        }),
+
+        prisma.subcategory.findMany({
+          where: {
+            name: {
+              contains: query,
+            },
+          },
+          select: {
+            id: true,
+          },
+        }),
+      ])
+    : [[], [], []];
+
+  const matchingBrandIds = matchingBrands.map((brand) => brand.id);
+  const matchingCategoryIds = matchingCategories.map((category) => category.id);
+  const matchingSubcategoryIds = matchingSubcategories.map(
+    (subcategory) => subcategory.id,
+  );
+
+  const productSearchConditions: Prisma.ProductWhereInput[] = query
+    ? [
+        {
+          name: {
+            contains: query,
+          },
+        },
+        {
+          code: {
+            contains: query,
+          },
+        },
+        {
+          descriptionShort: {
+            contains: query,
+          },
+        },
+        ...(matchingBrandIds.length > 0
+          ? [
+              {
+                brandId: {
+                  in: matchingBrandIds,
+                },
+              },
+            ]
+          : []),
+        ...(matchingCategoryIds.length > 0
+          ? [
+              {
+                categoryId: {
+                  in: matchingCategoryIds,
+                },
+              },
+            ]
+          : []),
+        ...(matchingSubcategoryIds.length > 0
+          ? [
+              {
+                subcategoryId: {
+                  in: matchingSubcategoryIds,
+                },
+              },
+            ]
+          : []),
+      ]
+    : [];
+
   const where: Prisma.ProductWhereInput = {
     ...(selectedStatus === "eliminados"
       ? {
@@ -149,52 +239,9 @@ export default async function AdminProductsPage({
       : {
           deletedAt: null,
         }),
-    ...(query
+    ...(productSearchConditions.length > 0
       ? {
-          OR: [
-            {
-              name: {
-                contains: query,
-              },
-            },
-            {
-              code: {
-                contains: query,
-              },
-            },
-            {
-              descriptionShort: {
-                contains: query,
-              },
-            },
-            {
-              brand: {
-                is: {
-                  name: {
-                    contains: query,
-                  },
-                },
-              },
-            },
-            {
-              category: {
-                is: {
-                  name: {
-                    contains: query,
-                  },
-                },
-              },
-            },
-            {
-              subcategory: {
-                is: {
-                  name: {
-                    contains: query,
-                  },
-                },
-              },
-            },
-          ],
+          OR: productSearchConditions,
         }
       : {}),
     ...(selectedCategory
