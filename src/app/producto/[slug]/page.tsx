@@ -138,8 +138,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const productUrl = `${siteConfig.url}/producto/${product.slug}`;
 
   const productDescription =
-    product.descriptionLong ??
     product.descriptionShort ??
+    product.descriptionLong ??
     "Producto disponible para consultar precio contado, cuotas, financiación y disponibilidad.";
 
   const productImageUrls =
