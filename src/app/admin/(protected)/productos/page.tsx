@@ -139,113 +139,22 @@ export default async function AdminProductsPage({
     },
   });
 
-  const [matchingBrands, matchingCategories, matchingSubcategories] = query
-    ? await Promise.all([
-        prisma.brand.findMany({
-          where: {
-            name: {
-              contains: query,
-            },
-          },
-          select: {
-            id: true,
-          },
-        }),
-
-        prisma.category.findMany({
-          where: {
-            name: {
-              contains: query,
-            },
-          },
-          select: {
-            id: true,
-          },
-        }),
-
-        prisma.subcategory.findMany({
-          where: {
-            name: {
-              contains: query,
-            },
-          },
-          select: {
-            id: true,
-          },
-        }),
-      ])
-    : [[], [], []];
-
-  const matchingBrandIds = matchingBrands.map((brand) => brand.id);
-  const matchingCategoryIds = matchingCategories.map((category) => category.id);
-  const matchingSubcategoryIds = matchingSubcategories.map(
-    (subcategory) => subcategory.id,
-  );
-
-  const productSearchConditions: Prisma.ProductWhereInput[] = query
-    ? [
-        {
-          name: {
-            contains: query,
-          },
-        },
-        {
-          code: {
-            contains: query,
-          },
-        },
-        {
-          descriptionShort: {
-            contains: query,
-          },
-        },
-        ...(matchingBrandIds.length > 0
-          ? [
-              {
-                brandId: {
-                  in: matchingBrandIds,
-                },
-              },
-            ]
-          : []),
-        ...(matchingCategoryIds.length > 0
-          ? [
-              {
-                categoryId: {
-                  in: matchingCategoryIds,
-                },
-              },
-            ]
-          : []),
-        ...(matchingSubcategoryIds.length > 0
-          ? [
-              {
-                subcategoryId: {
-                  in: matchingSubcategoryIds,
-                },
-              },
-            ]
-          : []),
-      ]
-    : [];
-
   const matchingProductRows = query
     ? await prisma.$queryRaw<{ id: number }[]>`
-        SELECT DISTINCT p.id
-        FROM product p
-        LEFT JOIN category c ON c.id = p.categoryId
-        LEFT JOIN subcategory s ON s.id = p.subcategoryId
-        LEFT JOIN brand b ON b.id = p.brandId
-        WHERE p.deletedAt IS NULL
-          AND (
-            COALESCE(p.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
-            OR COALESCE(p.code, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
-            OR COALESCE(p.descriptionShort, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
-            OR COALESCE(b.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
-            OR COALESCE(c.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
-            OR COALESCE(s.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
-          )
-      `
+      SELECT DISTINCT p.id
+      FROM \`Product\` p
+      LEFT JOIN \`Category\` c ON c.id = p.categoryId
+      LEFT JOIN \`Subcategory\` s ON s.id = p.subcategoryId
+      LEFT JOIN \`Brand\` b ON b.id = p.brandId
+      WHERE (
+        COALESCE(p.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+        OR COALESCE(p.code, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+        OR COALESCE(p.descriptionShort, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+        OR COALESCE(b.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+        OR COALESCE(c.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+        OR COALESCE(s.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+      )
+    `
     : [];
 
   const matchingProductIds = matchingProductRows.map((product) => product.id);
@@ -260,6 +169,7 @@ export default async function AdminProductsPage({
       : {
           deletedAt: null,
         }),
+
     ...(query
       ? {
           id: {
@@ -267,6 +177,7 @@ export default async function AdminProductsPage({
           },
         }
       : {}),
+
     ...(selectedCategory
       ? {
           category: {
@@ -274,26 +185,31 @@ export default async function AdminProductsPage({
           },
         }
       : {}),
+
     ...(selectedStatus === "activos"
       ? {
           isActive: true,
         }
       : {}),
+
     ...(selectedStatus === "inactivos"
       ? {
           isActive: false,
         }
       : {}),
+
     ...(selectedStatus === "sin-precio"
       ? {
           price: null,
         }
       : {}),
+
     ...(selectedStatus === "destacados"
       ? {
           isFeatured: true,
         }
       : {}),
+
     ...(selectedStatus === "ofertas"
       ? {
           isOffer: true,

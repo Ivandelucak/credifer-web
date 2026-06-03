@@ -54,12 +54,12 @@ export async function GET(request: Request) {
         b.name AS brandName,
         pi.url AS imageUrl,
         pi.alt AS imageAlt
-      FROM product p
-      LEFT JOIN category c ON c.id = p.categoryId
-      LEFT JOIN brand b ON b.id = p.brandId
-      LEFT JOIN productimage pi ON pi.id = (
+      FROM \`Product\` p
+      LEFT JOIN \`Category\` c ON c.id = p.categoryId
+      LEFT JOIN \`Brand\` b ON b.id = p.brandId
+      LEFT JOIN \`ProductImage\` pi ON pi.id = (
         SELECT pi2.id
-        FROM productimage pi2
+        FROM \`ProductImage\` pi2
         WHERE pi2.productId = p.id
         ORDER BY pi2.isPrimary DESC, pi2.position ASC
         LIMIT 1
