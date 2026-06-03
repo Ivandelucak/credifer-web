@@ -2,6 +2,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { siteConfig } from "@/lib/site";
+import type { Metadata } from "next";
 
 const categoryHeroBenefits = [
   {
@@ -22,6 +24,50 @@ const categoryHeroBenefits = [
 ];
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Categorías | Credifer",
+  description:
+    "Explorá las categorías del catálogo Credifer. Encontrá celulares, electrodomésticos, herramientas, tecnología, muebles, parlantes y más productos para consultar cuotas y disponibilidad.",
+  alternates: {
+    canonical: `${siteConfig.url}/categorias`,
+  },
+  openGraph: {
+    title: "Categorías | Credifer",
+    description:
+      "Navegá el catálogo Credifer por categorías y encontrá rápido los productos que necesitás.",
+    type: "website",
+    url: `${siteConfig.url}/categorias`,
+    siteName: "Credifer",
+    locale: "es_AR",
+    images: [
+      {
+        url: `${siteConfig.url}/brand/logo-square.png`,
+        width: 512,
+        height: 512,
+        alt: "Credifer",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Categorías | Credifer",
+    description:
+      "Explorá productos por categoría en el catálogo online de Credifer.",
+    images: [`${siteConfig.url}/brand/logo-square.png`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
 
 const categoryVisuals: Record<
   string,
@@ -107,6 +153,10 @@ const fallbackAccents = [
 
 function getFallbackAccent(index: number) {
   return fallbackAccents[index % fallbackAccents.length];
+}
+
+function serializeJsonLd(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
 export default async function CategoriesPage() {
@@ -210,8 +260,76 @@ export default async function CategoriesPage() {
     })),
   ];
 
+  const categoriesUrl = `${siteConfig.url}/categorias`;
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: siteConfig.url,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Categorías",
+        item: categoriesUrl,
+      },
+    ],
+  };
+
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Categorías | Credifer",
+    description:
+      "Secciones del catálogo online de Credifer para explorar productos por categoría.",
+    url: categoriesUrl,
+    inLanguage: "es-AR",
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Credifer",
+      url: siteConfig.url,
+    },
+    breadcrumb: breadcrumbJsonLd,
+    mainEntity: {
+      "@type": "ItemList",
+      name: "Categorías del catálogo Credifer",
+      numberOfItems: catalogSections.length,
+      itemListElement: catalogSections.map((section, index) => {
+        const visual = categoryVisuals[section.slug];
+
+        return {
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${siteConfig.url}/${section.slug}`,
+          name: section.name,
+          image: visual?.image ? `${siteConfig.url}${visual.image}` : undefined,
+        };
+      }),
+    },
+  };
+
   return (
     <section className="bg-[var(--catalog-bg)]">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(breadcrumbJsonLd),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(collectionJsonLd),
+        }}
+      />
       <div className="relative overflow-hidden border-b border-[#C9D6E4] bg-[linear-gradient(135deg,#EAF4FB_0%,#F8FBFF_45%,#FFF7D8_78%,#EAF8EF_100%)]">
         <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(2,100,169,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(2,100,169,0.14)_1px,transparent_1px)] [background-size:44px_44px]" />
         <div className="pointer-events-none absolute -left-24 top-12 h-72 w-72 rounded-full bg-[rgba(2,100,169,0.14)] blur-3xl" />

@@ -6,7 +6,6 @@ import { prisma } from "@/lib/prisma";
 import { siteConfig } from "@/lib/site";
 import { AddToCartButton } from "@/components/cart/AddToCartButton";
 import { ProductGallery } from "@/components/products/ProductGallery";
-import { ProductCard } from "@/components/products/ProductCard";
 import { RelatedProductsCarousel } from "@/components/products/RelatedProductsCarousel";
 import { BackButton } from "@/components/layout/BackButton";
 
@@ -36,6 +35,10 @@ const purchaseHighlights = [
   },
 ];
 
+function serializeJsonLd(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 async function getProduct(slug: string) {
   return prisma.product.findFirst({
     where: {
@@ -63,21 +66,58 @@ export async function generateMetadata({
   if (!product) {
     return {
       title: "Producto no encontrado",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
+  const productUrl = `${siteConfig.url}/producto/${product.slug}`;
+  const imageUrl = product.images[0]?.url;
+  const description =
+    product.metaDescription ??
+    product.descriptionShort ??
+    `Consultá por ${product.name} en Credifer. Precio contado y opciones de financiación por WhatsApp.`;
+
   return {
     title: product.metaTitle ?? product.name,
-    description:
-      product.metaDescription ??
-      `Consultá por ${product.name} en Credifer. Precio contado y opciones de financiación por WhatsApp.`,
+    description,
+    alternates: {
+      canonical: productUrl,
+    },
     openGraph: {
       title: product.metaTitle ?? product.name,
-      description:
-        product.metaDescription ?? `Consultá por ${product.name} en Credifer.`,
+      description,
       type: "website",
-      url: `${siteConfig.url}/producto/${product.slug}`,
-      images: product.images[0]?.url ? [product.images[0].url] : undefined,
+      url: productUrl,
+      siteName: "Credifer",
+      locale: "es_AR",
+      images: imageUrl
+        ? [
+            {
+              url: imageUrl,
+              alt: product.name,
+            },
+          ]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.metaTitle ?? product.name,
+      description,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
   };
 }
@@ -93,14 +133,103 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const priceLabel = formatCurrency(
     product.price ? product.price.toString() : null,
   );
+
   const primaryImage = product.images[0] ?? null;
+  const productUrl = `${siteConfig.url}/producto/${product.slug}`;
+
+  const productDescription =
+    product.descriptionLong ??
+    product.descriptionShort ??
+    "Producto disponible para consultar precio contado, cuotas, financiación y disponibilidad.";
+
+  const productImageUrls =
+    product.images.length > 0
+      ? product.images.map((image) => image.url)
+      : [`${siteConfig.url}/brand/logo-square.png`];
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    description: productDescription,
+    image: productImageUrls,
+    url: productUrl,
+    sku: String(product.id),
+    brand: product.brand
+      ? {
+          "@type": "Brand",
+          name: product.brand.name,
+        }
+      : {
+          "@type": "Brand",
+          name: "Credifer",
+        },
+    category: product.subcategory?.name ?? product.category?.name ?? "Producto",
+    offers: product.price
+      ? {
+          "@type": "Offer",
+          url: productUrl,
+          priceCurrency: "ARS",
+          price: product.price.toString(),
+          availability: "https://schema.org/InStock",
+          itemCondition: "https://schema.org/NewCondition",
+          seller: {
+            "@type": "Organization",
+            name: "Credifer",
+            url: siteConfig.url,
+          },
+        }
+      : undefined,
+  };
+
+  const breadcrumbItems = [
+    {
+      name: "Inicio",
+      url: siteConfig.url,
+    },
+    {
+      name: "Productos",
+      url: `${siteConfig.url}/productos`,
+    },
+    ...(product.category
+      ? [
+          {
+            name: product.category.name,
+            url: `${siteConfig.url}/${product.category.slug}`,
+          },
+        ]
+      : []),
+    ...(product.subcategory
+      ? [
+          {
+            name: product.subcategory.name,
+            url: `${siteConfig.url}/${product.subcategory.slug}`,
+          },
+        ]
+      : []),
+    {
+      name: product.name,
+      url: productUrl,
+    },
+  ];
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
 
   const whatsappText = [
     "Hola Credifer, quiero consultar por este producto:",
     "",
     product.name,
     `Precio contado: ${priceLabel}`,
-    `Link: ${siteConfig.url}/producto/${product.slug}`,
+    `Link: ${productUrl}`,
     "",
     "Quisiera saber opciones de cuotas, disponibilidad y entrega.",
   ].join("\n");
@@ -183,13 +312,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
     price: relatedProduct.price ? relatedProduct.price.toString() : null,
   }));
 
-  const productDescription =
-    product.descriptionLong ??
-    product.descriptionShort ??
-    "Producto disponible para consultar precio contado, cuotas, financiación y disponibilidad.";
-
   return (
     <section className="bg-[var(--catalog-bg)]">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(productJsonLd),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(breadcrumbJsonLd),
+        }}
+      />
+
       <div className="relative overflow-hidden border-b border-[#C9D6E4] bg-[linear-gradient(135deg,#EAF4FB_0%,#F8FBFF_42%,#FFF7D8_76%,#EAF8EF_100%)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(2,100,169,0.16),transparent_32%),radial-gradient(circle_at_82%_10%,rgba(123,170,53,0.12),transparent_28%),radial-gradient(circle_at_58%_88%,rgba(244,196,48,0.20),transparent_30%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(2,100,169,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(2,100,169,0.14)_1px,transparent_1px)] [background-size:44px_44px]" />
@@ -231,6 +371,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               ) : null}
             </div>
           </div>
+
           <div className="grid gap-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
             <ProductGallery
               productName={product.name}

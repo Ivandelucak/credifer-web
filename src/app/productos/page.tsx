@@ -1,13 +1,58 @@
 // src/app/productos/page.tsx
-
+import type { Metadata } from "next";
 import type { Prisma } from "@prisma/client";
 import Link from "next/link";
 import { ProductCard } from "@/components/products/ProductCard";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import { CatalogFilters } from "@/components/products/CatalogFilters";
+import { siteConfig } from "@/lib/site";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Productos | Credifer",
+  description:
+    "Explorá el catálogo online de Credifer. Buscá productos por categoría, marca o modelo y consultá precio contado, cuotas, financiación, disponibilidad y entrega.",
+  alternates: {
+    canonical: `${siteConfig.url}/productos`,
+  },
+  openGraph: {
+    title: "Productos | Credifer",
+    description:
+      "Catálogo online de Credifer con productos, precios publicados y consultas por financiación.",
+    type: "website",
+    url: `${siteConfig.url}/productos`,
+    siteName: "Credifer",
+    locale: "es_AR",
+    images: [
+      {
+        url: `${siteConfig.url}/brand/logo-square.png`,
+        width: 512,
+        height: 512,
+        alt: "Credifer",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Productos | Credifer",
+    description:
+      "Explorá productos de Credifer y consultá precio contado, cuotas y disponibilidad.",
+    images: [`${siteConfig.url}/brand/logo-square.png`],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+};
 
 type ProductsPageProps = {
   searchParams: Promise<{
@@ -30,6 +75,10 @@ const orderOptions = [
   { label: "Mayor precio", value: "precio-desc" },
 ];
 const featuredQuickSubcategorySlugs = ["celulares", "parlantes"];
+
+function serializeJsonLd(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
 
 function getPaginationItems(currentPage: number, totalPages: number) {
   const delta = 1;
@@ -483,8 +532,72 @@ export default async function ProductsPage({
   const lastProductNumber =
     totalProducts > 0 ? firstProductNumber + serializedProducts.length - 1 : 0;
 
+  const catalogUrl = `${siteConfig.url}/productos`;
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Inicio",
+        item: siteConfig.url,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Productos",
+        item: catalogUrl,
+      },
+    ],
+  };
+
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: "Productos | Credifer",
+    description:
+      "Catálogo online de Credifer con productos disponibles para consultar precio contado, cuotas, financiación, disponibilidad y entrega.",
+    url: catalogUrl,
+    inLanguage: "es-AR",
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Credifer",
+      url: siteConfig.url,
+    },
+    breadcrumb: breadcrumbJsonLd,
+    mainEntity: {
+      "@type": "ItemList",
+      name: "Catálogo de productos Credifer",
+      numberOfItems: totalProducts,
+      itemListElement: serializedProducts.map((product, index) => ({
+        "@type": "ListItem",
+        position: firstProductNumber + index,
+        url: `${siteConfig.url}/producto/${product.slug}`,
+        name: product.name,
+        image: product.images[0]?.url,
+      })),
+    },
+  };
+
   return (
     <section className="bg-[var(--catalog-bg)]">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(breadcrumbJsonLd),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(collectionJsonLd),
+        }}
+      />
       <div className="relative overflow-hidden border-b border-[#B7CADA] bg-[linear-gradient(135deg,#EAF4FB_0%,#F8FBFF_42%,#FFF7D8_76%,#EAF8EF_100%)]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(2,100,169,0.18),transparent_32%),radial-gradient(circle_at_82%_10%,rgba(123,170,53,0.14),transparent_28%),radial-gradient(circle_at_58%_88%,rgba(244,196,48,0.20),transparent_30%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(2,100,169,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(2,100,169,0.14)_1px,transparent_1px)] [background-size:44px_44px]" />

@@ -125,6 +125,10 @@ const sectionVisuals: Record<
   },
 };
 
+function serializeJsonLd(data: unknown) {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
 async function getCatalogSection(slug: string): Promise<CatalogSection | null> {
   const category = await prisma.category.findFirst({
     where: {
@@ -197,22 +201,62 @@ export async function generateMetadata({
   if (!section) {
     return {
       title: "Categoría no encontrada",
+      robots: {
+        index: false,
+        follow: false,
+      },
     };
   }
 
+  const sectionUrl = `${siteConfig.url}/${section.slug}`;
+  const visual = sectionVisuals[section.slug];
+
   const description =
-    section.type === "category"
-      ? `Conocé productos de ${section.name} en Credifer. Precio contado publicado y financiación a consultar.`
-      : `Conocé productos de ${section.name} en Credifer. Precio contado publicado, cuotas y financiación a consultar.`;
+    section.description ??
+    (section.type === "category"
+      ? `Conocé productos de ${section.name} en Credifer. Precio contado publicado, cuotas y financiación a consultar.`
+      : `Conocé productos de ${section.name} en Credifer. Precio contado publicado, cuotas, financiación, disponibilidad y entrega a consultar.`);
+
+  const imageUrl = visual?.image
+    ? `${siteConfig.url}${visual.image}`
+    : `${siteConfig.url}/brand/logo-square.png`;
 
   return {
     title: `${section.name} | Credifer`,
     description,
+    alternates: {
+      canonical: sectionUrl,
+    },
     openGraph: {
       title: `${section.name} | Credifer`,
-      description: `Productos de ${section.name} disponibles en Credifer.`,
+      description,
       type: "website",
-      url: `${siteConfig.url}/${section.slug}`,
+      url: sectionUrl,
+      siteName: "Credifer",
+      locale: "es_AR",
+      images: [
+        {
+          url: imageUrl,
+          alt: visual?.alt ?? section.name,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${section.name} | Credifer`,
+      description,
+      images: [imageUrl],
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
   };
 }
@@ -384,9 +428,88 @@ export default async function CategoryPage({
     section.type === "subcategory" && section.parentCategory
       ? `/${section.parentCategory.slug}`
       : "/categorias";
+  const sectionUrl = `${siteConfig.url}/${section.slug}`;
+
+  const breadcrumbItems = [
+    {
+      name: "Inicio",
+      url: siteConfig.url,
+    },
+    {
+      name: "Categorías",
+      url: `${siteConfig.url}/categorias`,
+    },
+    ...(section.type === "subcategory" && section.parentCategory
+      ? [
+          {
+            name: section.parentCategory.name,
+            url: `${siteConfig.url}/${section.parentCategory.slug}`,
+          },
+        ]
+      : []),
+    {
+      name: section.name,
+      url: sectionUrl,
+    },
+  ];
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: breadcrumbItems.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+
+  const collectionJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: `${section.name} | Credifer`,
+    description: sectionDescription,
+    url: sectionUrl,
+    inLanguage: "es-AR",
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Credifer",
+      url: siteConfig.url,
+    },
+    breadcrumb: breadcrumbJsonLd,
+    mainEntity: {
+      "@type": "ItemList",
+      name: `Productos de ${section.name}`,
+      numberOfItems: serializedProducts.length,
+      itemListElement: serializedProducts
+        .slice(0, 24)
+        .map((product, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${siteConfig.url}/producto/${product.slug}`,
+          name: product.name,
+          image: product.images[0]?.url,
+        })),
+    },
+  };
 
   return (
     <section className="bg-[var(--catalog-bg)]">
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(breadcrumbJsonLd),
+        }}
+      />
+
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: serializeJsonLd(collectionJsonLd),
+        }}
+      />
       <div className="container-page py-8 lg:py-12">
         <div className="mb-5">
           <BackButton fallbackHref={fallbackHref} label="Volver" />
