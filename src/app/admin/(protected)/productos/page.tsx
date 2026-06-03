@@ -169,22 +169,28 @@ export default async function AdminProductsPage({
             },
             {
               brand: {
-                name: {
-                  contains: query,
+                is: {
+                  name: {
+                    contains: query,
+                  },
                 },
               },
             },
             {
               category: {
-                name: {
-                  contains: query,
+                is: {
+                  name: {
+                    contains: query,
+                  },
                 },
               },
             },
             {
               subcategory: {
-                name: {
-                  contains: query,
+                is: {
+                  name: {
+                    contains: query,
+                  },
                 },
               },
             },

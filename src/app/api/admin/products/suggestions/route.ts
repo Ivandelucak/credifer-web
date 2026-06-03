@@ -1,3 +1,4 @@
+//src/app/api/admin/products/suggestions/route.ts
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
@@ -27,78 +28,104 @@ export async function GET(request: Request) {
     });
   }
 
-  const products = await prisma.product.findMany({
-    where: {
-      deletedAt: null,
-      OR: [
-        {
-          name: {
-            contains: query,
-          },
-        },
-        {
-          code: {
-            contains: query,
-          },
-        },
-        {
-          brand: {
+  try {
+    const products = await prisma.product.findMany({
+      where: {
+        deletedAt: null,
+        OR: [
+          {
             name: {
               contains: query,
             },
           },
-        },
-        {
-          category: {
-            name: {
+          {
+            code: {
               contains: query,
             },
           },
+          {
+            brand: {
+              is: {
+                name: {
+                  contains: query,
+                },
+              },
+            },
+          },
+          {
+            category: {
+              is: {
+                name: {
+                  contains: query,
+                },
+              },
+            },
+          },
+          {
+            subcategory: {
+              is: {
+                name: {
+                  contains: query,
+                },
+              },
+            },
+          },
+        ],
+      },
+      orderBy: [{ isActive: "desc" }, { updatedAt: "desc" }],
+      take: 8,
+      select: {
+        id: true,
+        code: true,
+        name: true,
+        slug: true,
+        price: true,
+        isActive: true,
+        category: {
+          select: {
+            name: true,
+          },
         },
-      ],
-    },
-    orderBy: [{ isActive: "desc" }, { updatedAt: "desc" }],
-    take: 8,
-    select: {
-      id: true,
-      code: true,
-      name: true,
-      slug: true,
-      price: true,
-      isActive: true,
-      category: {
-        select: {
-          name: true,
+        brand: {
+          select: {
+            name: true,
+          },
+        },
+        images: {
+          orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
+          take: 1,
+          select: {
+            url: true,
+            alt: true,
+          },
         },
       },
-      brand: {
-        select: {
-          name: true,
-        },
-      },
-      images: {
-        orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
-        take: 1,
-        select: {
-          url: true,
-          alt: true,
-        },
-      },
-    },
-  });
+    });
 
-  return NextResponse.json({
-    suggestions: products.map((product) => ({
-      id: product.id,
-      code: product.code,
-      name: product.name,
-      slug: product.slug,
-      price: product.price ? product.price.toString() : null,
-      isActive: product.isActive,
-      categoryName: product.category?.name ?? null,
-      brandName: product.brand?.name ?? null,
-      imageUrl: product.images[0]?.url ?? null,
-      imageAlt: product.images[0]?.alt ?? product.name,
-    })),
-  });
+    return NextResponse.json({
+      suggestions: products.map((product) => ({
+        id: product.id,
+        code: product.code,
+        name: product.name,
+        slug: product.slug,
+        price: product.price ? product.price.toString() : null,
+        isActive: product.isActive,
+        categoryName: product.category?.name ?? null,
+        brandName: product.brand?.name ?? null,
+        imageUrl: product.images[0]?.url ?? null,
+        imageAlt: product.images[0]?.alt ?? product.name,
+      })),
+    });
+  } catch (error) {
+    console.error("Error loading product suggestions:", error);
+
+    return NextResponse.json(
+      {
+        error: "No se pudieron cargar las sugerencias.",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
 }
