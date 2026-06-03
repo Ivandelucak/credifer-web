@@ -2,9 +2,21 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
+
+type ProductSuggestionRow = {
+  id: number;
+  code: string | null;
+  name: string;
+  slug: string;
+  price: unknown;
+  isActive: boolean | number;
+  categoryName: string | null;
+  brandName: string | null;
+  imageUrl: string | null;
+  imageAlt: string | null;
+};
 
 export async function GET(request: Request) {
   const session = await getAdminSession();
@@ -30,129 +42,39 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [matchingBrands, matchingCategories, matchingSubcategories] =
-      await Promise.all([
-        prisma.brand.findMany({
-          where: {
-            name: {
-              contains: query,
-            },
-          },
-          select: {
-            id: true,
-          },
-        }),
-
-        prisma.category.findMany({
-          where: {
-            name: {
-              contains: query,
-            },
-          },
-          select: {
-            id: true,
-          },
-        }),
-
-        prisma.subcategory.findMany({
-          where: {
-            name: {
-              contains: query,
-            },
-          },
-          select: {
-            id: true,
-          },
-        }),
-      ]);
-
-    const matchingBrandIds = matchingBrands.map((brand) => brand.id);
-    const matchingCategoryIds = matchingCategories.map(
-      (category) => category.id,
-    );
-    const matchingSubcategoryIds = matchingSubcategories.map(
-      (subcategory) => subcategory.id,
-    );
-
-    const searchConditions: Prisma.ProductWhereInput[] = [
-      {
-        name: {
-          contains: query,
-        },
-      },
-      {
-        code: {
-          contains: query,
-        },
-      },
-      {
-        descriptionShort: {
-          contains: query,
-        },
-      },
-      ...(matchingBrandIds.length > 0
-        ? [
-            {
-              brandId: {
-                in: matchingBrandIds,
-              },
-            },
-          ]
-        : []),
-      ...(matchingCategoryIds.length > 0
-        ? [
-            {
-              categoryId: {
-                in: matchingCategoryIds,
-              },
-            },
-          ]
-        : []),
-      ...(matchingSubcategoryIds.length > 0
-        ? [
-            {
-              subcategoryId: {
-                in: matchingSubcategoryIds,
-              },
-            },
-          ]
-        : []),
-    ];
-
-    const products = await prisma.product.findMany({
-      where: {
-        deletedAt: null,
-        OR: searchConditions,
-      },
-      orderBy: [{ isActive: "desc" }, { updatedAt: "desc" }],
-      take: 8,
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        slug: true,
-        price: true,
-        isActive: true,
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        brand: {
-          select: {
-            name: true,
-          },
-        },
-        images: {
-          orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
-          take: 1,
-          select: {
-            url: true,
-            alt: true,
-          },
-        },
-      },
-    });
+    const products = await prisma.$queryRaw<ProductSuggestionRow[]>`
+      SELECT
+        p.id,
+        p.code,
+        p.name,
+        p.slug,
+        p.price,
+        p.isActive,
+        c.name AS categoryName,
+        b.name AS brandName,
+        pi.url AS imageUrl,
+        pi.alt AS imageAlt
+      FROM product p
+      LEFT JOIN category c ON c.id = p.categoryId
+      LEFT JOIN brand b ON b.id = p.brandId
+      LEFT JOIN productimage pi ON pi.id = (
+        SELECT pi2.id
+        FROM productimage pi2
+        WHERE pi2.productId = p.id
+        ORDER BY pi2.isPrimary DESC, pi2.position ASC
+        LIMIT 1
+      )
+      WHERE p.deletedAt IS NULL
+        AND (
+          COALESCE(p.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(p.code, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(p.descriptionShort, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(b.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(c.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+        )
+      ORDER BY p.isActive DESC, p.updatedAt DESC
+      LIMIT 8
+    `;
 
     return NextResponse.json({
       suggestions: products.map((product) => ({
@@ -160,12 +82,12 @@ export async function GET(request: Request) {
         code: product.code,
         name: product.name,
         slug: product.slug,
-        price: product.price ? product.price.toString() : null,
-        isActive: product.isActive,
-        categoryName: product.category?.name ?? null,
-        brandName: product.brand?.name ?? null,
-        imageUrl: product.images[0]?.url ?? null,
-        imageAlt: product.images[0]?.alt ?? product.name,
+        price: product.price ? String(product.price) : null,
+        isActive: Boolean(product.isActive),
+        categoryName: product.categoryName,
+        brandName: product.brandName,
+        imageUrl: product.imageUrl,
+        imageAlt: product.imageAlt ?? product.name,
       })),
     });
   } catch (error) {

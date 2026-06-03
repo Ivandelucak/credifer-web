@@ -229,6 +229,27 @@ export default async function AdminProductsPage({
       ]
     : [];
 
+  const matchingProductRows = query
+    ? await prisma.$queryRaw<{ id: number }[]>`
+        SELECT DISTINCT p.id
+        FROM product p
+        LEFT JOIN category c ON c.id = p.categoryId
+        LEFT JOIN subcategory s ON s.id = p.subcategoryId
+        LEFT JOIN brand b ON b.id = p.brandId
+        WHERE p.deletedAt IS NULL
+          AND (
+            COALESCE(p.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+            OR COALESCE(p.code, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+            OR COALESCE(p.descriptionShort, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+            OR COALESCE(b.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+            OR COALESCE(c.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+            OR COALESCE(s.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          )
+      `
+    : [];
+
+  const matchingProductIds = matchingProductRows.map((product) => product.id);
+
   const where: Prisma.ProductWhereInput = {
     ...(selectedStatus === "eliminados"
       ? {
@@ -239,9 +260,11 @@ export default async function AdminProductsPage({
       : {
           deletedAt: null,
         }),
-    ...(productSearchConditions.length > 0
+    ...(query
       ? {
-          OR: productSearchConditions,
+          id: {
+            in: matchingProductIds.length > 0 ? matchingProductIds : [-1],
+          },
         }
       : {}),
     ...(selectedCategory
