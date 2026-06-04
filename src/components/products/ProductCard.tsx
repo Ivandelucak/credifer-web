@@ -131,6 +131,13 @@ export function ProductCard({ product }: ProductCardProps) {
     categoryName: product.subcategory?.name ?? product.category?.name ?? null,
   };
 
+  const descriptionPreview =
+    product.descriptionShort
+      ?.split(/\r?\n/)
+      .map((line) => line.trim())
+      .find(Boolean) ??
+    "Producto disponible para consultar precio, cuotas y disponibilidad.";
+
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[1.05rem] border border-[var(--catalog-border)] bg-white shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[var(--brand-blue)] hover:shadow-[var(--catalog-shadow)] sm:rounded-[1.65rem] sm:shadow-[0_10px_24px_rgba(15,23,42,0.065)]">
       <Link
@@ -231,15 +238,9 @@ export function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
 
-        {product.descriptionShort ? (
-          <p className="mt-2 hidden text-sm leading-6 text-[var(--text-secondary)] sm:line-clamp-2 sm:block sm:min-h-11">
-            {product.descriptionShort}
-          </p>
-        ) : (
-          <p className="mt-2 hidden text-sm leading-6 text-[var(--text-secondary)] sm:line-clamp-2 sm:block sm:min-h-11">
-            Producto disponible para consultar precio, cuotas y disponibilidad.
-          </p>
-        )}
+        <p className="mt-2 hidden text-sm leading-6 text-[var(--text-secondary)] sm:line-clamp-1 sm:block">
+          {descriptionPreview}
+        </p>
 
         <div className="mt-auto pt-2.5 sm:pt-4">
           <div className="rounded-xl border border-[#C9D6E4] bg-white px-2.5 py-2 shadow-sm sm:rounded-2xl sm:px-4 sm:py-3">
