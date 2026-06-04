@@ -68,6 +68,8 @@ export async function GET(request: NextRequest) {
     where,
     orderBy: [{ category: { name: "asc" } }, { name: "asc" }],
     select: {
+      id: true,
+      code: true,
       name: true,
       slug: true,
       price: true,
@@ -109,6 +111,8 @@ export async function GET(request: NextRequest) {
   });
 
   const rows = products.map((product) => ({
+    id: product.id,
+    codigo: product.code ?? "",
     nombre: product.name,
     slug: product.slug,
     precio_contado: product.price ? product.price.toString() : "",
@@ -134,6 +138,8 @@ export async function GET(request: NextRequest) {
   const productsSheet = utils.json_to_sheet(rows);
 
   productsSheet["!cols"] = [
+    { wch: 8 },
+    { wch: 20 },
     { wch: 44 },
     { wch: 36 },
     { wch: 14 },

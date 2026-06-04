@@ -1,6 +1,7 @@
 // src/app/admin/(protected)/importar/page.tsx
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { ProductExcelImportPanel } from "@/components/admin/ProductExcelImportPanel";
 
 export const dynamic = "force-dynamic";
 
@@ -182,6 +183,7 @@ export default async function AdminImportPage() {
             Ir a productos
           </Link>
         </div>
+        <ProductExcelImportPanel />
       </section>
     </div>
   );
