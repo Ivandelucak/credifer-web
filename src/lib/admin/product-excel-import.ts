@@ -378,11 +378,6 @@ async function getOrCreateBrand(
 
 async function getNextProductCodeNumber(tx: ImportTx) {
   const products = await tx.product.findMany({
-    where: {
-      code: {
-        startsWith: "CRD-",
-      },
-    },
     select: {
       code: true,
     },
