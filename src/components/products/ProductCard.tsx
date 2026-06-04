@@ -238,10 +238,6 @@ export function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
 
-        <p className="mt-2 hidden text-sm leading-6 text-[var(--text-secondary)] sm:line-clamp-1 sm:block">
-          {descriptionPreview}
-        </p>
-
         <div className="mt-auto pt-2.5 sm:pt-4">
           <div className="rounded-xl border border-[#C9D6E4] bg-white px-2.5 py-2 shadow-sm sm:rounded-2xl sm:px-4 sm:py-3">
             <p className="hidden text-[11px] font-black uppercase tracking-[0.16em] text-[var(--text-muted)] sm:block">
