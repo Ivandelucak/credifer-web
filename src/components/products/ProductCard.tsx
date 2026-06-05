@@ -131,13 +131,6 @@ export function ProductCard({ product }: ProductCardProps) {
     categoryName: product.subcategory?.name ?? product.category?.name ?? null,
   };
 
-  const descriptionPreview =
-    product.descriptionShort
-      ?.split(/\r?\n/)
-      .map((line) => line.trim())
-      .find(Boolean) ??
-    "Producto disponible para consultar precio, cuotas y disponibilidad.";
-
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-[1.05rem] border border-[var(--catalog-border)] bg-white shadow-[0_8px_18px_rgba(15,23,42,0.06)] transition duration-200 hover:-translate-y-1 hover:border-[var(--brand-blue)] hover:shadow-[var(--catalog-shadow)] sm:rounded-[1.65rem] sm:shadow-[0_10px_24px_rgba(15,23,42,0.065)]">
       <Link

@@ -27,16 +27,23 @@ type OrderOption = {
   value: string;
 };
 
+type StatusOption = {
+  label: string;
+  value: string;
+};
+
 type CatalogFiltersProps = {
   categories: CategoryOption[];
   subcategories: SubcategoryOption[];
   brands: BrandOption[];
   orderOptions: OrderOption[];
+  statusOptions: StatusOption[];
   query: string;
   selectedCategory: string;
   selectedSubcategory: string;
   selectedBrand: string;
   selectedOrder: string;
+  selectedStatus: string;
   activeFiltersCount: number;
   hasFilters: boolean;
 };
@@ -50,16 +57,41 @@ function FilterForm({
   subcategories,
   brands,
   orderOptions,
+  statusOptions,
   query,
   selectedCategory,
   selectedSubcategory,
   selectedBrand,
   selectedOrder,
+  selectedStatus,
   idPrefix,
 }: FilterFormProps) {
   return (
     <form className="mt-5 grid gap-4" action="/productos#catalogo" method="GET">
       {query ? <input type="hidden" name="q" value={query} /> : null}
+
+      <div>
+        <label
+          htmlFor={`${idPrefix}-estado`}
+          className="mb-2 block text-sm font-black text-[var(--text-primary)]"
+        >
+          Estado
+        </label>
+
+        <select
+          id={`${idPrefix}-estado`}
+          name="estado"
+          defaultValue={selectedStatus}
+          className="h-12 w-full rounded-2xl border border-[var(--border)] bg-white px-4 text-sm font-bold text-[var(--text-primary)] outline-none transition focus:border-[var(--brand-blue)]"
+        >
+          <option value="">Todos</option>
+          {statusOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div>
         <label
@@ -187,7 +219,7 @@ export function CatalogFilters(props: CatalogFiltersProps) {
               </p>
 
               <p className="mt-1 text-sm font-bold text-[var(--text-secondary)]">
-                Refiná productos por categoría, marca y orden.
+                Refiná productos por estado, categoría, marca y orden.
               </p>
             </div>
 

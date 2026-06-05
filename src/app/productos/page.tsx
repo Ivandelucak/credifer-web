@@ -62,6 +62,7 @@ type ProductsPageProps = {
     marca?: string;
     orden?: string;
     page?: string;
+    estado?: string;
   }>;
 };
 
@@ -74,6 +75,12 @@ const orderOptions = [
   { label: "Menor precio", value: "precio-asc" },
   { label: "Mayor precio", value: "precio-desc" },
 ];
+
+const statusOptions = [
+  { label: "Ofertas", value: "ofertas" },
+  { label: "Destacados", value: "destacados" },
+];
+
 const featuredQuickSubcategorySlugs = ["celulares", "parlantes"];
 
 function serializeJsonLd(data: unknown) {
@@ -119,6 +126,7 @@ function createProductsPageHref({
   selectedSubcategory,
   selectedBrand,
   selectedOrder,
+  selectedStatus,
 }: {
   page: number;
   query: string;
@@ -126,6 +134,7 @@ function createProductsPageHref({
   selectedSubcategory: string;
   selectedBrand: string;
   selectedOrder: string;
+  selectedStatus: string;
 }) {
   const params = new URLSearchParams();
 
@@ -143,6 +152,10 @@ function createProductsPageHref({
 
   if (selectedBrand) {
     params.set("marca", selectedBrand);
+  }
+
+  if (selectedStatus) {
+    params.set("estado", selectedStatus);
   }
 
   if (selectedOrder && selectedOrder !== "recientes") {
@@ -186,17 +199,23 @@ function buildProductsUrl(params: {
   subcategoria?: string;
   marca?: string;
   orden?: string;
+  estado?: string;
   page?: number;
 }) {
   const searchParams = new URLSearchParams();
 
   if (params.q) searchParams.set("q", params.q);
   if (params.categoria) searchParams.set("categoria", params.categoria);
+
   if (params.subcategoria) {
     searchParams.set("subcategoria", params.subcategoria);
   }
 
   if (params.marca) searchParams.set("marca", params.marca);
+
+  if (params.estado) {
+    searchParams.set("estado", params.estado);
+  }
 
   if (params.orden && params.orden !== "recientes") {
     searchParams.set("orden", params.orden);
@@ -223,6 +242,13 @@ export default async function ProductsPage({
   const selectedSubcategory = params.subcategoria?.trim() ?? "";
   const selectedBrand = params.marca?.trim() ?? "";
   const selectedOrder = params.orden?.trim() ?? "recientes";
+
+  const selectedStatus =
+    params.estado === "ofertas" || params.estado === "destacados"
+      ? params.estado
+      : "";
+  const selectedStatusData =
+    statusOptions.find((option) => option.value === selectedStatus) ?? null;
 
   const currentPage = Math.max(1, Number(params.page ?? "1") || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
@@ -329,6 +355,18 @@ export default async function ProductsPage({
   const where: Prisma.ProductWhereInput = {
     isActive: true,
     deletedAt: null,
+
+    ...(selectedStatus === "ofertas"
+      ? {
+          isOffer: true,
+        }
+      : {}),
+
+    ...(selectedStatus === "destacados"
+      ? {
+          isFeatured: true,
+        }
+      : {}),
 
     ...(selectedCategory
       ? {
@@ -456,6 +494,7 @@ export default async function ProductsPage({
           subcategoria: selectedSubcategory,
           marca: selectedBrand,
           orden: selectedOrder,
+          estado: selectedStatus,
           page: currentPage - 1,
         })
       : null;
@@ -468,6 +507,7 @@ export default async function ProductsPage({
           subcategoria: selectedSubcategory,
           marca: selectedBrand,
           orden: selectedOrder,
+          estado: selectedStatus,
           page: currentPage + 1,
         })
       : null;
@@ -516,6 +556,7 @@ export default async function ProductsPage({
     selectedCategory ||
     selectedSubcategory ||
     selectedBrand ||
+    selectedStatus ||
     selectedOrder !== "recientes";
 
   const activeFiltersCount = [
@@ -523,6 +564,7 @@ export default async function ProductsPage({
     selectedCategory,
     selectedSubcategory,
     selectedBrand,
+    selectedStatus,
     selectedOrder !== "recientes" ? selectedOrder : "",
   ].filter(Boolean).length;
 
@@ -695,6 +737,10 @@ export default async function ProductsPage({
                   <input type="hidden" name="orden" value={selectedOrder} />
                 ) : null}
 
+                {selectedStatus ? (
+                  <input type="hidden" name="estado" value={selectedStatus} />
+                ) : null}
+
                 <div className="flex flex-col gap-3 sm:flex-row">
                   <input
                     type="search"
@@ -801,6 +847,10 @@ export default async function ProductsPage({
               <input type="hidden" name="orden" value={selectedOrder} />
             ) : null}
 
+            {selectedStatus ? (
+              <input type="hidden" name="estado" value={selectedStatus} />
+            ) : null}
+
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
                 type="search"
@@ -836,7 +886,12 @@ export default async function ProductsPage({
 
               <div className="flex gap-2 overflow-x-auto pb-1">
                 <Link
-                  href="/productos#catalogo"
+                  href={buildProductsUrl({
+                    q: query,
+                    marca: selectedBrand,
+                    orden: selectedOrder,
+                    estado: selectedStatus,
+                  })}
                   className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-black transition focus-ring ${
                     !selectedCategory && !selectedSubcategory
                       ? "border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white shadow-[0_10px_22px_rgba(2,100,169,0.20)]"
@@ -854,6 +909,7 @@ export default async function ProductsPage({
                       subcategoria: subcategory.slug,
                       marca: selectedBrand,
                       orden: selectedOrder,
+                      estado: selectedStatus,
                     })}
                     className={`shrink-0 whitespace-nowrap rounded-full border px-3.5 py-2 text-xs font-black transition focus-ring ${
                       selectedSubcategory === subcategory.slug
@@ -888,7 +944,12 @@ export default async function ProductsPage({
 
               <div className="flex gap-3 overflow-x-auto pb-2 lg:flex-wrap lg:overflow-visible lg:pb-0">
                 <Link
-                  href="/productos"
+                  href={buildProductsUrl({
+                    q: query,
+                    marca: selectedBrand,
+                    orden: selectedOrder,
+                    estado: selectedStatus,
+                  })}
                   className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-black transition focus-ring ${
                     !selectedCategory && !selectedSubcategory
                       ? "border-[var(--brand-blue)] bg-[var(--brand-blue)] text-white shadow-[0_10px_22px_rgba(2,100,169,0.20)]"
@@ -905,6 +966,7 @@ export default async function ProductsPage({
                       subcategoria: subcategory.slug,
                       marca: selectedBrand,
                       orden: selectedOrder,
+                      estado: selectedStatus,
                     })}
                     className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-black transition focus-ring ${
                       selectedSubcategory === subcategory.slug
@@ -926,6 +988,7 @@ export default async function ProductsPage({
                       categoria: category.slug,
                       marca: selectedBrand,
                       orden: selectedOrder,
+                      estado: selectedStatus,
                     })}
                     className={`shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-black transition focus-ring ${
                       selectedCategory === category.slug
@@ -955,11 +1018,13 @@ export default async function ProductsPage({
             subcategories={sortedSubcategories}
             brands={brands}
             orderOptions={orderOptions}
+            statusOptions={statusOptions}
             query={query}
             selectedCategory={selectedCategory}
             selectedSubcategory={selectedSubcategory}
             selectedBrand={selectedBrand}
             selectedOrder={selectedOrder}
+            selectedStatus={selectedStatus}
             activeFiltersCount={activeFiltersCount}
             hasFilters={Boolean(hasFilters)}
           />
@@ -1018,10 +1083,20 @@ export default async function ProductsPage({
                     </span>
                   ) : null}
 
+                  {selectedStatusData ? (
+                    <span className="rounded-full border border-[#C9D6E4] bg-white px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)]">
+                      {selectedStatusData.label}
+                    </span>
+                  ) : null}
+
                   {selectedOrder !== "recientes" ? (
                     <span className="rounded-full border border-[#C9D6E4] bg-white px-3 py-1.5 text-xs font-black text-[var(--brand-blue-dark)]">
                       Orden: {selectedOrderData.label}
                     </span>
+                  ) : null}
+
+                  {selectedStatus ? (
+                    <input type="hidden" name="estado" value={selectedStatus} />
                   ) : null}
 
                   {hasFilters ? (
@@ -1089,6 +1164,7 @@ export default async function ProductsPage({
                           selectedSubcategory,
                           selectedBrand,
                           selectedOrder,
+                          selectedStatus,
                         })}
                         className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#C9D6E4] bg-white px-5 py-2.5 text-sm font-black text-[var(--brand-blue-dark)] shadow-sm transition hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] focus-ring"
                       >
@@ -1125,6 +1201,7 @@ export default async function ProductsPage({
                               selectedSubcategory,
                               selectedBrand,
                               selectedOrder,
+                              selectedStatus,
                             })}
                             aria-current={isCurrent ? "page" : undefined}
                             className={`inline-flex h-10 min-w-10 items-center justify-center rounded-full px-3 text-sm font-black transition focus-ring ${
@@ -1148,6 +1225,7 @@ export default async function ProductsPage({
                           selectedSubcategory,
                           selectedBrand,
                           selectedOrder,
+                          selectedStatus,
                         })}
                         className="inline-flex min-h-11 items-center justify-center rounded-full bg-[var(--brand-blue)] px-5 py-2.5 text-sm font-black text-white shadow-[0_12px_24px_rgba(2,100,169,0.18)] transition hover:bg-[var(--brand-blue-dark)] focus-ring"
                       >

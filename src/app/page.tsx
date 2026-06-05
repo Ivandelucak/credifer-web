@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { siteConfig } from "@/lib/site";
 import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import { ProductHorizontalScroller } from "@/components/products/ProductHorizontalScroller";
 
 const featuredCategories = [
   {
@@ -203,7 +205,77 @@ const serviceAreas = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const productCardSelect = {
+    id: true,
+    name: true,
+    slug: true,
+    price: true,
+    descriptionShort: true,
+    isFeatured: true,
+    isOffer: true,
+    category: {
+      select: {
+        name: true,
+        slug: true,
+      },
+    },
+    subcategory: {
+      select: {
+        name: true,
+        slug: true,
+      },
+    },
+    brand: {
+      select: {
+        name: true,
+      },
+    },
+    images: {
+      orderBy: [{ isPrimary: "desc" as const }, { position: "asc" as const }],
+      take: 1,
+      select: {
+        url: true,
+        alt: true,
+      },
+    },
+  };
+
+  const [offerProducts, featuredProducts] = await Promise.all([
+    prisma.product.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+        isOffer: true,
+      },
+      orderBy: [{ updatedAt: "desc" }],
+      take: 10,
+      select: productCardSelect,
+    }),
+
+    prisma.product.findMany({
+      where: {
+        isActive: true,
+        deletedAt: null,
+        isFeatured: true,
+        isOffer: false,
+      },
+      orderBy: [{ updatedAt: "desc" }],
+      take: 10,
+      select: productCardSelect,
+    }),
+  ]);
+
+  const serializedOfferProducts = offerProducts.map((product) => ({
+    ...product,
+    price: product.price ? product.price.toString() : null,
+  }));
+
+  const serializedFeaturedProducts = featuredProducts.map((product) => ({
+    ...product,
+    price: product.price ? product.price.toString() : null,
+  }));
+
   const commerceWhatsappUrl = `https://wa.me/${
     siteConfig.whatsappNumber
   }?text=${encodeURIComponent(
@@ -478,7 +550,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="container-page pt-10 pb-5 lg:pt-12 lg:pb-6">
+      <ProductHorizontalScroller
+        scrollId="home-offer-products"
+        eyebrow="Ofertas"
+        title="Ofertas destacadas"
+        description="Productos seleccionados con precio contado publicado para consultar disponibilidad, cuotas y entrega."
+        href="/productos?estado=ofertas"
+        hrefLabel="Ver ofertas"
+        products={serializedOfferProducts}
+      />
+
+      <section className="container-page pt-5 pb-5 lg:pt-6 lg:pb-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--brand-blue)]">
@@ -592,6 +674,16 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <ProductHorizontalScroller
+        scrollId="home-featured-products"
+        eyebrow="Destacados"
+        title="Productos destacados"
+        description="Una selección de productos recomendados para encontrar rápido opciones útiles del catálogo Credifer."
+        href="/productos?estado=destacados"
+        hrefLabel="Ver destacados"
+        products={serializedFeaturedProducts}
+      />
 
       <section className="bg-[var(--catalog-bg)] pt-4 pb-8 lg:pt-5 lg:pb-9">
         <div className="container-page">
