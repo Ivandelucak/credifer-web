@@ -129,6 +129,21 @@ function serializeJsonLd(data: unknown) {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
 
+function normalizeSearchText(value: string | null | undefined) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function textMatchesSearch(value: string, tokens: string[]) {
+  const normalizedValue = normalizeSearchText(value);
+
+  return tokens.every((token) => normalizedValue.includes(token));
+}
+
 async function getCatalogSection(slug: string): Promise<CatalogSection | null> {
   const category = await prisma.category.findFirst({
     where: {
@@ -292,35 +307,77 @@ export default async function CategoryPage({
       ? { categoryId: section.id }
       : { subcategoryId: section.id };
 
+  const normalizedQuery = normalizeSearchText(query);
+  const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+
+  const matchingProductIds =
+    queryTokens.length > 0
+      ? (
+          await prisma.product.findMany({
+            where: {
+              isActive: true,
+              deletedAt: null,
+              ...sectionProductFilter,
+              ...(selectedBrand
+                ? {
+                    brand: {
+                      slug: selectedBrand,
+                    },
+                  }
+                : {}),
+            },
+            select: {
+              id: true,
+              name: true,
+              descriptionShort: true,
+              brand: {
+                select: {
+                  name: true,
+                },
+              },
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+              subcategory: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          })
+        )
+          .filter((product) =>
+            textMatchesSearch(
+              [
+                product.name,
+                product.descriptionShort,
+                product.brand?.name,
+                product.category?.name,
+                product.subcategory?.name,
+              ]
+                .filter(Boolean)
+                .join(" "),
+              queryTokens,
+            ),
+          )
+          .map((product) => product.id)
+      : [];
+
   const productWhere = {
     isActive: true,
     deletedAt: null,
     ...sectionProductFilter,
-    ...(query
+
+    ...(queryTokens.length > 0
       ? {
-          OR: [
-            {
-              name: {
-                contains: query,
-              },
-            },
-            {
-              descriptionShort: {
-                contains: query,
-              },
-            },
-            {
-              brand: {
-                is: {
-                  name: {
-                    contains: query,
-                  },
-                },
-              },
-            },
-          ],
+          id: {
+            in: matchingProductIds.length > 0 ? matchingProductIds : [-1],
+          },
         }
       : {}),
+
     ...(selectedBrand
       ? {
           brand: {

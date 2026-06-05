@@ -352,9 +352,38 @@ export default async function ProductsPage({
       }),
     ]);
 
+  const matchingProductRows = query
+    ? await prisma.$queryRaw<{ id: number }[]>`
+      SELECT DISTINCT p.id
+      FROM \`Product\` p
+      LEFT JOIN \`Category\` c ON c.id = p.categoryId
+      LEFT JOIN \`Subcategory\` s ON s.id = p.subcategoryId
+      LEFT JOIN \`Brand\` b ON b.id = p.brandId
+      WHERE p.isActive = true
+        AND p.deletedAt IS NULL
+        AND (
+          COALESCE(p.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(p.descriptionShort, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(b.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(c.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+          OR COALESCE(s.name, '') COLLATE utf8mb4_unicode_ci LIKE CONCAT('%', CONVERT(${query} USING utf8mb4), '%') COLLATE utf8mb4_unicode_ci
+        )
+    `
+    : [];
+
+  const matchingProductIds = matchingProductRows.map((product) => product.id);
+
   const where: Prisma.ProductWhereInput = {
     isActive: true,
     deletedAt: null,
+
+    ...(query
+      ? {
+          id: {
+            in: matchingProductIds.length > 0 ? matchingProductIds : [-1],
+          },
+        }
+      : {}),
 
     ...(selectedStatus === "ofertas"
       ? {
@@ -389,44 +418,6 @@ export default async function ProductsPage({
           brand: {
             slug: selectedBrand,
           },
-        }
-      : {}),
-
-    ...(query
-      ? {
-          OR: [
-            {
-              name: {
-                contains: query,
-              },
-            },
-            {
-              descriptionShort: {
-                contains: query,
-              },
-            },
-            {
-              brand: {
-                name: {
-                  contains: query,
-                },
-              },
-            },
-            {
-              category: {
-                name: {
-                  contains: query,
-                },
-              },
-            },
-            {
-              subcategory: {
-                name: {
-                  contains: query,
-                },
-              },
-            },
-          ],
         }
       : {}),
   };
