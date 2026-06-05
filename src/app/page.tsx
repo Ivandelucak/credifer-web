@@ -4,6 +4,10 @@ import { siteConfig } from "@/lib/site";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { ProductHorizontalScroller } from "@/components/products/ProductHorizontalScroller";
+import { revalidatePath } from "next/cache";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const featuredCategories = [
   {
