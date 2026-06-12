@@ -142,6 +142,11 @@ const categoryVisuals: Record<
     alt: "Pequeños electrodomésticos para el hogar",
     accent: "bg-[var(--brand-blue)]",
   },
+  cocinas: {
+    image: "/categories/cocinas.jpg",
+    alt: "Cocinas y productos de cocina",
+    accent: "bg-[var(--brand-yellow)]",
+  },
 };
 
 const fallbackAccents = [

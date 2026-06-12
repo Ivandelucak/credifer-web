@@ -408,7 +408,6 @@ export default async function CategoryPage({
     prisma.product.findMany({
       where: productWhere,
       orderBy: productOrderBy,
-      take: 60,
       select: {
         id: true,
         name: true,
