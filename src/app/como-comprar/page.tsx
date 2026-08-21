@@ -69,11 +69,6 @@ const faqs = [
     answer:
       "No. La tienda funciona como catálogo con carrito de consulta. La operación se coordina luego con Credifer.",
   },
-  {
-    question: "¿Puedo consultar financiación?",
-    answer:
-      "Sí. Al enviar la consulta, un asesor puede informarte alternativas de pago y financiación disponibles.",
-  },
 ];
 
 export default function HowToBuyPage() {
