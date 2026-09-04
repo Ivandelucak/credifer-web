@@ -36,14 +36,6 @@ const footerLinks = [
   },
 ];
 
-const paymentBenefits = [
-  "Cuota semanal",
-  "Cuota Simple",
-  "Tarjetas",
-  "Efectivo",
-  "Transferencia",
-];
-
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -84,17 +76,6 @@ export function Footer() {
               Explorá productos, armá tu consulta y coordiná financiación,
               disponibilidad y entrega con un asesor.
             </p>
-
-            <div className="mt-5 flex flex-wrap gap-2">
-              {paymentBenefits.map((benefit) => (
-                <span
-                  key={benefit}
-                  className="rounded-full border border-white/12 bg-white/[0.08] px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.12em] text-white/78"
-                >
-                  {benefit}
-                </span>
-              ))}
-            </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
